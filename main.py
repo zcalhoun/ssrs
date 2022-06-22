@@ -1,4 +1,6 @@
+import os
 import argparse
+import logging
 
 import torch
 from torch.utils.data import DataLoader
@@ -40,34 +42,53 @@ parser.add_argument(
     "--device", type=str, default="auto", help="Whether to use the GPU."
 )
 
+###################
+# Logging arguments
+###################
+parser.add_argument(
+    "--dump_path",
+    type=str,
+    default="./experiments/results/",
+    help="Where to put the results for analysis.",
+)
+parser.add_argument(
+    "--log_level", type=str, default="INFO", help="The log level to report on."
+)
+
 
 def main():
+    # Set up arguments
     global args
     args = parser.parse_args()
+    validate_args(args)
 
-    if args.task is None:
-        raise Exception("A task must be provided.")
-    if args.encoder is None:
-        raise Exception("An encoder must be provided.")
-    if args.decoder is None:
-        raise Exception("A decoder must be provided.")
+    # Set up timer to time results
+    overall_timer = utils.Timer()
+
+    # Set up path for recording results
+    os.makedirs(args.dump_path)
+
+    # Set up logger and log the arguments
+    set_up_logger()
+    logging.info(args)
 
     # Load the train dataset and the test dataset
+    logging.info("Loading dataset...")
     train_data, test_data = datasets.load(args.task)
 
     # Create the dataloader
+    logging.info("Creating data loaders...")
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
     test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True)
 
     # Instantiate the model
+    logging.info("Instantiating the model...")
     encoder = load_encoder(args.encoder)
     decoder = load_decoder(args.decoder)
 
     # Load model to GPU
-    if device == "auto":
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-    else:
-        self.device = args.device
+    logging.info("Loading model to device...")
+    device = set_device()
 
     # Set up optimizer, depending on whether
     # we are fine-tuning or not
@@ -76,14 +97,25 @@ def main():
     else:
         params = decoder.parameters()
 
+    logging.info("Setting up optimizer and criterion...")
     optimizer = utils.get_optim(args.task, params, args.lr)
     criterion = utils.get_criterion(args.task)
 
+    epoch_timer = utils.Timer()
+    monitor = utils.PerformanceMonitor(args.dump_path)
     for epoch in range(epochs):
+        logging.info(f"Beginning epoch {epoch}...")
 
-        scores = train(train_loader, encoder, decoder, optimizer, criterion)
+        loss = train(train_loader, encoder, decoder, optimizer, criterion)
+        monitor.log(epoch, "train", loss)
+        
+        loss = test(test_loader, encoder, decoder, criterion)
+        monitor.log(epoch, "val", loss)
 
-        scores = test(test_loader, encoder, decoder, criterion)
+        logging.info(f"Epoch {epoch} took {epoch_timer.minutes_elapsed()} minutes.")
+        epoch_timer.reset()
+
+    logging.info(f"Code completed in {overall_timer.minutes_elapsed()}.")
 
 
 def train(loader, encoder, decoder, optimizer, criterion):
@@ -97,6 +129,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
     criterion = criterion.cuda()
 
     for batch_idx, (inp, target) in enumerate(loader):
+        logging.debug(f"Training batch {batch_idx}...")
         # Move to the GPU
         inp = inp.cuda()
         target = target.cuda()
@@ -134,6 +167,37 @@ def test(data_loader, encoder, decoder, criterion):
         # Compute output
         output = decoder(encoder(inp))
         loss = criterion(output, target)
+
+
+def validateArgs():
+    """
+    This function ensures that several criteria
+    are met before proceeding.
+    """
+
+    if args.task is None:
+        raise Exception("A task must be specified.")
+    if args.encoder is None:
+        raise Exception("An encoder must be specified.")
+    if args.decoder is None:
+        raise Exception("A decoder must be specified.")
+
+
+def set_up_logger():
+    logging.basicConfig(
+        filename=os.path.join(args.dump_path, "output.log"),
+        filemode="w",
+        level=args.log_level,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
+
+
+def set_device():
+    if args.device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    else:
+        device = args.device
+    return device
 
 
 if __name__ == "__main__":
