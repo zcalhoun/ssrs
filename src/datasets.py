@@ -14,8 +14,6 @@ def load(task):
     return task_map[task]()
 
 
-# TODO -- finish loading the solar data by splitting
-# into a train/test split.
 def _load_solar_data():
     # Split the data into a train and test set
     data_path = "/data/users/zdc6/data/SolarPV/fresno"

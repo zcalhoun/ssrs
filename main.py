@@ -6,8 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from src import datasets, utils
-from decoders.models import load_decoder
-from encoders.models import load_encoder
+from models import encoders, decoders
 
 # Create parser
 parser = argparse.ArgumentParser(description="Implementation of general encoder")
@@ -83,8 +82,8 @@ def main():
 
     # Instantiate the model
     logging.info("Instantiating the model...")
-    encoder = load_encoder(args.encoder)
-    decoder = load_decoder(args.decoder)
+    encoder = encoders.load(args.encoder)
+    decoder = decoders.load(args.decoder)
 
     # Load model to GPU
     logging.info("Loading model to device...")
@@ -108,7 +107,7 @@ def main():
 
         loss = train(train_loader, encoder, decoder, optimizer, criterion)
         monitor.log(epoch, "train", loss)
-        
+
         loss = test(test_loader, encoder, decoder, criterion)
         monitor.log(epoch, "val", loss)
 
