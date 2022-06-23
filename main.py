@@ -17,21 +17,25 @@ parser = argparse.ArgumentParser(description="Implementation of general encoder"
 parser.add_argument(
     "--task", type=str, default=None, help="The training task to attempt."
 )
-parser.add_argument("--batch_size", type=int, help="Batch size for the data.")
-
+# TODO - set a reasonable default.
+parser.add_argument(
+    "--batch_size", type=int, default=32, help="Batch size for the data."
+)
 
 ###################
 # Encoder arguments
 ###################
-parser.add_argument("--encoder", type=str, default=None, help="The encoder to use.")
+parser.add_argument("--encoder", type=str, default="swav", help="The encoder to use.")
+
+# Fine tuning for encoder
 parser.add_argument(
-    "--fine_tune", type=bool, default=False, help="Whether to fine tune or not."
+    "--fine_tune_encoder", type=bool, default=False, help="Whether to fine tune or not."
 )
 
 ###################
 # Decoder arguments
 ###################
-parser.add_argument("--decoder", type=str, default=None, help="The decoder to use.")
+parser.add_argument("--decoder", type=str, default="unet", help="The decoder to use.")
 
 ###################
 # Training arguments
@@ -40,6 +44,8 @@ parser.add_argument("--lr", type=float, default=1e-3, help="The learning rate.")
 parser.add_argument(
     "--device", type=str, default="auto", help="Whether to use the GPU."
 )
+
+# TODO - use ADAM for everything so this isn't an argument.
 
 ###################
 # Logging arguments
@@ -83,7 +89,7 @@ def main():
     # Instantiate the model
     logging.info("Instantiating the model...")
     encoder = encoders.load(args.encoder)
-    decoder = decoders.load(args.decoder)
+    decoder = decoders.load(args.decoder, encoder)
 
     # Load model to GPU
     logging.info("Loading model to device...")
@@ -91,10 +97,12 @@ def main():
 
     # Set up optimizer, depending on whether
     # we are fine-tuning or not
-    if args.fine_tune:
+    if args.fine_tune_encoder:
         params = [encoder.paramaters(), decoder.parameters()]
     else:
         params = decoder.parameters()
+
+    optimizer = utils.get_optim(args.task, params, args.lr)
 
     logging.info("Setting up optimizer and criterion...")
     optimizer = utils.get_optim(args.task, params, args.lr)
@@ -119,7 +127,7 @@ def main():
 
 def train(loader, encoder, decoder, optimizer, criterion):
 
-    if args.fine_tune:
+    if args.fine_tune_encoder:
         encoder.train()
     else:
         encoder.eval()
@@ -133,7 +141,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
         inp = inp.cuda()
         target = target.cuda()
 
-        if args.fine_tune:
+        if args.fine_tune_encoder:
             output = encoder(inp)
         else:
             with torch.no_grad():

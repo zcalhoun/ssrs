@@ -1,11 +1,11 @@
 import torch
 
-from base import resnet
+from .base import resnet
 
 
-def load_encoder(encoder_name):
+def load(encoder_name):
     if encoder_name == "swav":
-        return SwavEncoder()
+        return _load_swav()
     else:
         raise NotImplementedError
 
