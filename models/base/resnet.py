@@ -467,12 +467,3 @@ def resnet50(strides=(2, 2, 2, 1, 1), inter_features=False):
         Bottleneck, [3, 4, 6, 3], strides=strides, inter_features=inter_features
     )
     return model
-
-
-if __name__ == "__main__":
-    import torch
-
-    model = res2net101_26w_4s(True, strides=(2, 2, 2, 1, 1), inter_features=False)
-    x = torch.randn((5, 3, 512, 512))
-    y = model(x)
-    print(y.shape)

@@ -57,8 +57,8 @@ class PerformanceMonitor:
             f.write(",".join(self.columns))
             f.write("\n")
 
-    def log(self, stage, epoch, scores, minutes, kld_weight=None):
+    def log(self, epoch, stage, loss):
         """open the file and append a line to the csv"""
         with open(self.target_dir, "a") as f:
-            f.write(",".join([str(epoch), stage, str(loss),]))
+            f.write(",".join([str(epoch), stage, str(loss)]))
             f.write("\n")

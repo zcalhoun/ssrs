@@ -118,6 +118,7 @@ def main():
 
     epoch_timer = utils.Timer()
     monitor = utils.PerformanceMonitor(args.dump_path)
+    best_test_loss = float("inf")
     for epoch in range(args.epochs):
         logging.info(f"Beginning epoch {epoch}...")
 
@@ -126,11 +127,21 @@ def main():
 
         loss = test(test_loader, encoder, decoder, criterion)
         monitor.log(epoch, "val", loss)
-
         logging.info(f"Epoch {epoch} took {epoch_timer.minutes_elapsed()} minutes.")
         epoch_timer.reset()
 
+        if (epoch + 1) % 10 == 0:
+            if loss < best_test_loss:
+                logging.info("Saving model")
+                save_model(encoder, decoder, args.dump_path, "best.pt")
+                best_test_loss = loss
+
     logging.info(f"Code completed in {overall_timer.minutes_elapsed()}.")
+
+
+def save_model(enc, dec, dump_path, name):
+    torch.save(enc.state_dict(), os.path.join(dump_path, "enc_" + name))
+    torch.save(dec.state_dict(), os.path.join(dump_path, "dec_" + name))
 
 
 def train(loader, encoder, decoder, optimizer, criterion):
