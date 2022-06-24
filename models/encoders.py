@@ -1,3 +1,5 @@
+import logging
+
 import torch
 
 from .base import resnet
@@ -7,6 +9,7 @@ def load(encoder_name):
     if encoder_name == "swav":
         return _load_swav()
     else:
+        logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
 
 
@@ -26,6 +29,11 @@ def _load_swav():
 
     # Instantiate the version of ResNet that we want
     # and load the weights on top of this model.
-    base_model = resnet.resnet50()
+    # For semantic segmentation, we need inter_features
+    # to be true.
+    #
+    # As we add more functionality, this piece of code
+    # will need to change.
+    base_model = resnet.resnet50(inter_features=True)
     base_model.load_state_dict(state_dict)
     return base_model

@@ -116,7 +116,11 @@ class UnetDecoder(nn.Module):
         )
         self.up_sample = up_sample
 
-    def forward(self, ftr, layers):
+    def forward(self, x):
+        # This line of code is changed to handle
+        # breaking up the input into the encoder
+        # and middle layers
+        ftr, layers = x[0], x[1:]
         for l, uc in zip(layers, self.uc):
             ftr = uc(l, ftr)
         if self.up_sample > 0:

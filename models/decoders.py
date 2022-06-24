@@ -24,7 +24,7 @@ def _load_unet(encoder):
         logging.error("Channels is not defined for encoder.")
         raise AttributeError("Encoder must have channels defined.")
 
-    model = unet.UnetDecoder(in_chans, out_chans, margins, 2)
+    model = unet.UnetDecoder(in_chans, out_chans, margins, 1)
 
     return model
 

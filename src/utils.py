@@ -3,15 +3,7 @@ This file contains logic for loading the specific optimizer
 and criterion for a specific class.
 """
 import os
-
-# TODO
-def get_optim():
-    raise NotImplementedError
-
-
-# TODO
-def get_criterion():
-    raise NotImplementedError
+import time
 
 
 class Timer:
