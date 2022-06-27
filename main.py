@@ -72,7 +72,7 @@ def main():
     # Set up arguments
     global args
     args = parser.parse_args()
-    validate_args(args)
+    validate_args()
 
     # Set up timer to time results
     overall_timer = utils.Timer()

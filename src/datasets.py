@@ -4,7 +4,7 @@ import numpy as np
 
 from torchvision import transforms
 
-from tasks.solar import SolarPVDataset
+from .tasks.solar import SolarPVDataset
 
 
 def load(task):
@@ -20,7 +20,7 @@ def load(task):
 def _load_solar_data():
     # Split the data into a train and test set
     data_path = "/data/users/zdc6/data/SolarPV/retiled2"
-    files = list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path)))
+    files = np.array(list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path))))
     logging.debug(f"There are {len(files)} files in the Frenso dataset.")
     shape_file = "/data/users/zdc6/data/SolarPV/SolarArrayPolygons.geojson"
 
