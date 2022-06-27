@@ -1,5 +1,8 @@
 import os
 import logging
+import numpy as np
+
+from torchvision import transforms
 
 from tasks.solar import SolarPVDataset
 
@@ -16,7 +19,7 @@ def load(task):
 
 def _load_solar_data():
     # Split the data into a train and test set
-    data_path = "/data/users/zdc6/data/SolarPV/data"
+    data_path = "/data/users/zdc6/data/SolarPV/retiled2"
     files = list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path)))
     logging.debug(f"There are {len(files)} files in the Frenso dataset.")
     shape_file = "/data/users/zdc6/data/SolarPV/SolarArrayPolygons.geojson"
@@ -27,11 +30,35 @@ def _load_solar_data():
     test_files = files[mask]
     train_files = files[~mask]
 
+    # TODO - find the mean and standard deviation
+    tr_normalize = transforms.Normalize(
+        mean=[0.494, 0.491, 0.499], std=[0.142, 0.141, 0.135]
+    )
+
+    # Resize shouldn't typically be necessary...but just in case,
+    # the resize operation is included.
+    train_transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Resize((224, 224)),
+            tr_normalize,
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomVerticalFlip(p=0.5),
+        ]
+    )
+    test_transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Resize((224, 224)), tr_normalize]
+    )
+
     # Load the training dataset
     logging.debug("Creating the training dataset.")
-    train_dataset = SolarPVDataset(data_path, train_files, shape_file)
+    train_dataset = SolarPVDataset(
+        data_path, train_files, shape_file, transform=train_transform
+    )
     # Load the test dataset
     logging.debug("Creating the test dataset.")
-    test_dataset = SolarPVDataset(data_path, test_files, shape_file)
+    test_dataset = SolarPVDataset(
+        data_path, test_files, shape_file, transform=test_transform
+    )
     # Return the training and test dataset
     return train_dataset, test_dataset
