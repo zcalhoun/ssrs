@@ -461,8 +461,9 @@ class Res2Net(nn.Module):
 
             return x
 
-
-def resnet50(strides=(2, 2, 2, 1, 1), inter_features=False):
+# Note -- the default strides is changed to 2s to play
+# nicely with the decoder.
+def resnet50(strides=(2, 2, 2, 2, 2), inter_features=False):
     model = ResNet(
         Bottleneck, [3, 4, 6, 3], strides=strides, inter_features=inter_features
     )
