@@ -20,7 +20,7 @@ def _load_unet(encoder):
         in_chans = encoder.chans[:-1]
         out_chans = encoder.chans[1:]
         margins = [0, 0, 0, 0]
-        conv_chan = [d_in//2+d_out for (d_in, d_out) in zip(in_chans, out_chans)]
+        conv_chan = [d_in // 2 + d_out for (d_in, d_out) in zip(in_chans, out_chans)]
         num_class = 1
         pad = 1
         up_sample = 2
@@ -28,7 +28,9 @@ def _load_unet(encoder):
         logging.error("Channels is not defined for encoder.")
         raise AttributeError("Encoder must have channels defined.")
 
-    model = unet.UnetDecoder(in_chans, out_chans, margins, num_class, conv_chan, pad, up_sample)
+    model = unet.UnetDecoder(
+        in_chans, out_chans, margins, num_class, conv_chan, pad, up_sample
+    )
 
     return model
 

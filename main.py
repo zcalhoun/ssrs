@@ -78,7 +78,11 @@ def main():
     overall_timer = utils.Timer()
 
     # Set up path for recording results
-    os.makedirs(args.dump_path)
+    try:
+        os.makedirs(args.dump_path)
+    except FileExistsError:
+        print("Please delete the target directory if you would like to proceed.")
+        return
 
     # Set up logger and log the arguments
     set_up_logger()
