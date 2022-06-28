@@ -30,6 +30,8 @@ class SolarPVDataset(Dataset):
             out_mask, out_transform = mask(data, self.df["geometry"])
             img = data.read()
 
+        # Remove the last layer for images that have a fourth band.
+        img = img[:3, :, :]
         # Apply transforms
         if self.transform:
             img = self.transform(img.T)
