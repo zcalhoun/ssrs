@@ -19,7 +19,7 @@ def load(task):
 
 def _load_solar_data():
     # Split the data into a train and test set
-    data_path = "/data/users/zdc6/data/SolarPV/retiled3/"
+    data_path = "/data/users/zdc6/data/SolarPV/retiled/"
     files = np.array(list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path))))
     logging.debug(f"There are {len(files)} files in the Frenso dataset.")
     shape_file = "/data/users/zdc6/data/SolarPV/SolarArrayPolygons.geojson"

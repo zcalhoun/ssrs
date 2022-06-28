@@ -17,7 +17,7 @@ def load(metric_name, device):
     if metric_name == "softiou":
         return SoftIoULoss(device)
     elif metric_name == "xent":
-        return CrossEntropyLoss()
+        return nn.BCEWithLogitsLoss()
     else:
         return NotImplementedError("This loss isn't set up yet.")
 
@@ -107,7 +107,7 @@ class CrossEntropyLoss(LossClass):
     def __init__(self, class_weights=(1.0, 1.0)):
         super(CrossEntropyLoss, self).__init__()
         self.name = "xent"
-        class_weights = torch.tensor([float(a) for a in class_weights])
+        # class_weights = torch.tensor([float(a) for a in class_weights])
         self.criterion = nn.CrossEntropyLoss(class_weights)
 
     def forward(self, pred, lbl):

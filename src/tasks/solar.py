@@ -39,7 +39,7 @@ class SolarPVDataset(Dataset):
         out_mask[out_mask > 0] = 1
 
         # Turn both arrays into tensors
-        out_mask = torch.from_numpy(out_mask.astype("uint8"))
+        out_mask = torch.from_numpy(out_mask.astype("float32")).reshape(1, 224, 224)
         return img, out_mask
 
     def show_item(self, idx):
