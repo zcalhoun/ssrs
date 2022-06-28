@@ -124,6 +124,7 @@ def main():
     monitor = utils.PerformanceMonitor(args.dump_path)
     best_test_loss = float("inf")
     for epoch in range(args.epochs):
+        print(f"Beginning epoch {epoch}")
         logging.info(f"Beginning epoch {epoch}...")
 
         loss = train(train_loader, encoder, decoder, optimizer, criterion)
@@ -158,7 +159,10 @@ def train(loader, encoder, decoder, optimizer, criterion):
     decoder.train()
     criterion = criterion.cuda()
     avg_loss = utils.AverageMeter()
+    num_batches = len(loader)
     for batch_idx, (inp, target) in enumerate(loader):
+        if batch_idx % 10 == 0:
+            print(f"Beginning batch {batch_idx} of {num_batches}")
         logging.debug(f"Training batch {batch_idx}...")
         # Move to the GPU
         inp = inp.cuda()
