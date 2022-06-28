@@ -40,14 +40,13 @@ def _load_solar_data():
     train_transform = transforms.Compose(
         [
             transforms.ToTensor(),
-            transforms.Resize((224, 224)),
             tr_normalize,
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomVerticalFlip(p=0.5),
         ]
     )
     test_transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((224, 224)), tr_normalize]
+        [transforms.ToTensor(), tr_normalize]
     )
 
     # Load the training dataset
