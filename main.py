@@ -135,11 +135,10 @@ def main():
         logging.info(f"Epoch {epoch} took {epoch_timer.minutes_elapsed()} minutes.")
         epoch_timer.reset()
 
-        if (epoch + 1) % 10 == 0:
-            if loss < best_test_loss:
-                logging.info("Saving model")
-                save_model(encoder, decoder, args.dump_path, "best.pt")
-                best_test_loss = loss
+        if loss < best_test_loss:
+            logging.info("Saving model")
+            save_model(encoder, decoder, args.dump_path, "best.pt")
+            best_test_loss = loss
 
     logging.info(f"Code completed in {overall_timer.minutes_elapsed()}.")
 
