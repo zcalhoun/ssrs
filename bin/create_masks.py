@@ -18,11 +18,11 @@ def main(dump_path):
     print(f"{len(files)} files to read...")
     # Get references
     image_map = pd.read_csv(
-        "../../data/SolarPV/polygonDataExceptVertices.csv", index_col=0
+        "/home/zdc6/data/SolarPV/polygonDataExceptVertices.csv", index_col=0
     ).set_index("image_name")
 
     polygon_vertices = pd.read_csv(
-        "../../data/SolarPV/polygonVertices_PixelCoordinates.csv"
+        "/home/zdc6/data/SolarPV/polygonVertices_PixelCoordinates.csv"
     ).set_index("polygon_id")
 
     # Iterate through each image.
