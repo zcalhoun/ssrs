@@ -104,9 +104,11 @@ def main():
 
     # Load model to GPU
     logging.info("Loading model to device...")
-    device = set_device()
-    encoder = encoder.to(device)
-    decoder = decoder.to(device)
+    global DEVICE
+    DEVICE = set_device(args.device)
+    print("Device is " + DEVICE)
+    encoder = encoder.to(DEVICE)
+    decoder = decoder.to(DEVICE)
 
     # Set up optimizer, depending on whether
     # we are fine-tuning or not
@@ -118,7 +120,7 @@ def main():
 
     logging.info("Setting up optimizer and criterion...")
     optimizer = torch.optim.Adam(params, lr=args.lr, weight_decay=args.weight_decay)
-    criterion = metrics.load(args.criterion, device)
+    criterion = metrics.load(args.criterion, DEVICE)
 
     epoch_timer = utils.Timer()
     monitor = utils.PerformanceMonitor(args.dump_path)
@@ -156,7 +158,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
         encoder.eval()
 
     decoder.train()
-    criterion = criterion.cuda()
+    criterion = criterion.to(DEVICE)
     avg_loss = utils.AverageMeter()
     num_batches = len(loader)
     for batch_idx, (inp, target) in enumerate(loader):
@@ -164,8 +166,8 @@ def train(loader, encoder, decoder, optimizer, criterion):
             print(f"Beginning batch {batch_idx} of {num_batches}")
         logging.debug(f"Training batch {batch_idx}...")
         # Move to the GPU
-        inp = inp.cuda()
-        target = target.cuda()
+        inp = inp.to(DEVICE)
+        target = target.to(DEVICE)
 
         if args.fine_tune_encoder:
             output = encoder(inp)
@@ -194,14 +196,14 @@ def test(data_loader, encoder, decoder, criterion):
 
     encoder.eval()
     decoder.eval()
-    criterion = criterion.cuda()
+    criterion = criterion.to(DEVICE)
     avg_loss = utils.AverageMeter()
     for batch_idx, (inp, target) in enumerate(data_loader):
         # Move to the GPU
         if batch_idx % 100 == 0:
             print(f"Testing batch {batch_idx}")
-        inp = inp.cuda()
-        target = target.cuda()
+        inp = inp.to(DEVICE)
+        target = target.to(DEVICE)
 
         # Compute output
         output = decoder(encoder(inp))
@@ -236,11 +238,11 @@ def set_up_logger():
     )
 
 
-def set_device():
-    if args.device == "auto":
+def set_device(d):
+    if d == "auto":
         device = "cuda" if torch.cuda.is_available() else "cpu"
     else:
-        device = args.device
+        device = d
     return device
 
 
