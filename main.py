@@ -178,7 +178,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
         loss = criterion(output, target)
 
         if batch_idx % 10 == 0:
-            print(f"\t Loss: {loss.item()}")
+            print(f"\t Train Loss: {loss.item()}")
         # Calculate the gradients
         optimizer.zero_grad()
         loss.backward()
@@ -186,7 +186,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
         # Step forward
         optimizer.step()
 
-    return avg_loss
+    return avg_loss.avg
 
 
 @torch.no_grad()
@@ -198,6 +198,8 @@ def test(data_loader, encoder, decoder, criterion):
     avg_loss = utils.AverageMeter()
     for batch_idx, (inp, target) in enumerate(data_loader):
         # Move to the GPU
+        if batch_idx % 100 == 0:
+            print(f"Testing batch {batch_idx}")
         inp = inp.cuda()
         target = target.cuda()
 
@@ -205,8 +207,10 @@ def test(data_loader, encoder, decoder, criterion):
         output = decoder(encoder(inp))
         loss = criterion(output, target)
         avg_loss.update(loss.item(), inp.size(0))
+        if batch_idx % 10 == 0:
+            print(f"\t Test Loss: {loss.item()}")
 
-    return avg_loss
+    return avg_loss.avg
 
 
 def validate_args():
