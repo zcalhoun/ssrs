@@ -1,9 +1,11 @@
 """
-This file is a good example of how to mask data using
-a geojson and a set of files.
+DO NOT USE.
 
-The output is a set of masked images which can be used to create
-segments.
+This script shows how to generate images using rasterio, but it takes forever
+to run, and the resulting masks appear to be off. 
+
+However, I'll keep this script for posterity, as it does demonstrate how you could
+generate the masks, if you needed to.
 """
 
 import os

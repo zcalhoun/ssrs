@@ -1,3 +1,14 @@
+"""
+This script didn't end up being used (I ran the code in a Jupyter notebook)
+but this code is a good example of how to generate masks for a set of images
+given a CSV version of the images.
+
+Basically, the code iterates through the images, loads the mask, and creates the
+mask.
+
+Further processing may be required to ensure that the images are formatted correctly.
+"""
+
 import os
 import argparse
 

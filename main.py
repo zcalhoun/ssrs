@@ -160,7 +160,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
     avg_loss = utils.AverageMeter()
     num_batches = len(loader)
     for batch_idx, (inp, target) in enumerate(loader):
-        if batch_idx % 10 == 0:
+        if batch_idx % 100 == 0:
             print(f"Beginning batch {batch_idx} of {num_batches}")
         logging.debug(f"Training batch {batch_idx}...")
         # Move to the GPU
@@ -177,6 +177,8 @@ def train(loader, encoder, decoder, optimizer, criterion):
 
         loss = criterion(output, target)
 
+        if batch_idx % 10 == 0:
+            print(f"\t Loss: {loss.item()}")
         # Calculate the gradients
         optimizer.zero_grad()
         loss.backward()
