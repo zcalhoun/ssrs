@@ -49,7 +49,7 @@ parser.add_argument(
     "--device", type=str, default="auto", help="Whether to use the GPU."
 )
 parser.add_argument(
-    "--criterion", type=str, default="xent", help="Select the criterion to use."
+    "--criterion", type=str, default="softiou", help="Select the criterion to use."
 )
 parser.add_argument("--epochs", type=int, default=100, help="Number of epochs.")
 
@@ -141,7 +141,7 @@ def main():
             logging.info("Saving model")
             save_model(encoder, decoder, args.dump_path, "best.pt")
             best_test_loss = loss
-
+    save_model(encoder, decoder, args.dump_path, "final.pt")
     logging.info(f"Code completed in {overall_timer.minutes_elapsed()}.")
 
 
@@ -176,7 +176,6 @@ def train(loader, encoder, decoder, optimizer, criterion):
                 output = encoder(inp)
 
         output = decoder(output)
-
         loss = criterion(output, target)
 
         if batch_idx % 10 == 0:

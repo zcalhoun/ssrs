@@ -33,5 +33,5 @@ class SolarPVDataset(Dataset):
         if self.transform:
             img = self.transform(img)
 
-        return img, mask
+        return img, mask.type(torch.LongTensor)
 

@@ -1,6 +1,7 @@
 import os
 import logging
 import numpy as np
+import joblib
 
 from torchvision import transforms
 
@@ -21,14 +22,15 @@ def _load_solar_data():
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
-    files = np.array(list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path))))
+    files = joblib.load("/scratch/zach/train_test_split.joblib")
+    # files = np.array(list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path))))
     logging.debug(f"There are {len(files)} files in the Frenso dataset.")
 
     # Split files into two lists with an 80/20 split.
     # In this case, put every fifth file into the test set.
     mask = np.arange(0, len(files)) % 5 == 0
-    test_files = files[mask]
-    train_files = files[~mask]
+    test_files = files['test']['empty'] + files['test']['mask']
+    train_files = files['train']['empty'] + files['train']['mask']
 
     # TODO - find the mean and standard deviation
     tr_normalize = transforms.Normalize(
