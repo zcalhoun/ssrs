@@ -8,10 +8,18 @@ from .base import resnet
 def load(encoder_name):
     if encoder_name == "swav":
         return _load_swav()
+    elif encoder_name == "none":
+        print("Loading encoder with no pretrained weights.")
+        return _load_base()
     else:
         logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
 
+def _load_base():
+    # This only loads the base encoder model
+    # with no pretrained weights
+    base_model = resnet.resnet50(inter_features=True)
+    return base_model
 
 def _load_swav():
     """
