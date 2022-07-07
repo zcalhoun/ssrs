@@ -18,11 +18,11 @@ def load(task):
     return task_map[task]()
 
 
-def _load_solar_data():
+def _load_solar_data(data_path, mask_path, files):
     # Split the data into a train and test set
-    data_path = "/scratch/zach/solar-pv/"
-    mask_path = "/scratch/zach/mask_tensors/"
-    files = joblib.load("/scratch/zach/train_test_split.joblib")
+    # data_path = "/scratch/zach/solar-pv/"
+    # mask_path = "/scratch/zach/mask_tensors/"
+    # files = joblib.load("/scratch/zach/train_test_split.joblib")
     # files = np.array(list(filter(lambda x: x[-3:] == "tif", os.listdir(data_path))))
     logging.debug(f"There are {len(files)} files in the Frenso dataset.")
 
