@@ -47,7 +47,14 @@ class SolarPVDataset(Dataset):
             mask = augmented['mask'] 
 
         else:
-            # This piece of code is left as legacy code.
+            # This piece of code is left so that the test set
+            # gets a simple transform -- and as a legacy piece of
+            # code in case you don't want to transform on the training
+            # set with more than the required transforms...the code
+            # could be refactored to only use albumentations, but
+            # that will be left as a future exercise, since performance
+            # shouldn't be impacted by leaving this code in.
+            # 
             # Now that augmentations are set up, we pretty much
             # should never have the augmentations excluded.
             # However, if you want to run an experiment without
