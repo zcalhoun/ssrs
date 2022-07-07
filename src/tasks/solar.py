@@ -6,9 +6,6 @@ import cv2
 import torch
 from torch.utils.data import Dataset
 
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
-
 class SolarPVDataset(Dataset):
     def __init__(self, path, files, mask_path, transform=None, augmentations=None):
         self.path = path
@@ -16,7 +13,6 @@ class SolarPVDataset(Dataset):
         self.mask_path = mask_path
         self.transform = transform
         self.aug = augmentations
-        self.to_tensor = ToTensorV2()
 
     def __len__(self):
         return len(self.files)
@@ -38,23 +34,31 @@ class SolarPVDataset(Dataset):
         if self.aug:
             # Must convert to numpy array for
             # this to work nicely with albumentations
+            # cv2 is the recommended method for reading images.
+            # although you could just convert a PIL image to
+            # a numpy array, too.
             img = cv2.imread(self.path+img_name)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB )
-            mask = mask.numpy().T
+            # Albumentations works more nicely if you
+            # have the mask as a 2D array
+            mask = mask.numpy()[0]
             augmented = self.aug(image=img, mask=mask)
             img = augmented['image']
-            mask = augmented['mask'].copy().T
-
-            augmented = self.to_tensor(image=img, mask=mask)
-            img = augmented['image']
-            mask = augmented['mask']
+            mask = augmented['mask'] 
 
         else:
+            # This piece of code is left as legacy code.
+            # Now that augmentations are set up, we pretty much
+            # should never have the augmentations excluded.
+            # However, if you want to run an experiment without
+            # the standard augmentations, and just with the required
+            # augmentations needed to run the model, then turn
+            # augmentations off.
             img = Image.open(self.path+img_name)
             # Apply transforms
             if self.transform:
                 img = self.transform(img)
 
-
+        # Type change required.
         return img.type(torch.FloatTensor), mask.type(torch.LongTensor)
 

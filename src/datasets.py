@@ -53,6 +53,7 @@ def _load_solar_data(augmentations):
             A.Normalize(
                 mean=[0.494, 0.491, 0.499], std=[0.142, 0.141, 0.135]
             ),
+			ToTensorV2(),
         ])
 
     # Resize shouldn't typically be necessary...but just in case,
