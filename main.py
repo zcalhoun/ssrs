@@ -52,7 +52,7 @@ parser.add_argument(
     "--criterion", type=str, default="softiou", help="Select the criterion to use."
 )
 parser.add_argument("--epochs", type=int, default=100, help="Number of epochs.")
-
+parser.add_argument("--augment", type=bool, default=False, help="Whether to apply advanced augmentations")
 
 ###################
 # Logging arguments
@@ -90,7 +90,7 @@ def main():
 
     # Load the train dataset and the test dataset
     logging.info("Loading dataset...")
-    train_data, test_data = datasets.load(args.task)
+    train_data, test_data = datasets.load(args.task, args.augment)
 
     # Create the dataloader
     logging.info("Creating data loaders...")
