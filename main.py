@@ -119,7 +119,7 @@ def main():
 
     # Load the train dataset and the test dataset
     logging.info("Loading dataset...")
-    train_data, test_data = datasets.load(args.task, args.augment)
+    train_data, test_data = datasets.load(args.task, args.normalization, args.augment)
 
     # Create the dataloader
     logging.info("Creating data loaders...")

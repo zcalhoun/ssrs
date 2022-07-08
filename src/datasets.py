@@ -11,17 +11,18 @@ from albumentations.pytorch import ToTensorV2
 from .tasks.solar import SolarPVDataset
 
 
-def load(task, augmentations=False):
+def load(task, normalization='data', augmentations=False):
     logging.debug(f"In datasets, the task {task} is being loaded.")
     task_map = {
-        "solar": _load_solar_data(augmentations),
+        "solar": _load_solar_data(normalization, augmentations),
     }
     if task not in task_map:
-        raise ValueError
+        logging.error(f"{task} not implemented.")
+        raise NotImplementedError("This task is not supported at this time.")
     return task_map[task]
 
 
-def _load_solar_data(augmentations):
+def _load_solar_data(normalization, augmentations):
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
@@ -33,13 +34,30 @@ def _load_solar_data(augmentations):
     test_files = files['test']['empty'] + files['test']['mask']
     train_files = files['train']['empty'] + files['train']['mask']
 
-    # This normalization was calculated by taking several sample
-    # images (as tensors) and calculating the average RGB value along with the
-    # standard deviation.
-    tr_normalize = transforms.Normalize(
-        mean=[0.494, 0.491, 0.499], std=[0.142, 0.141, 0.135]
-    )
-
+    # We want to ensure that the normalization scheme is considered. In the case
+    # that we are using a pretrained method, it might be better to use that
+    # pretrained normalization mean and standard deviation. Otherwise, it would
+    # be better to use the normalization scheme applied on the original dataset.
+    # By specifying 'data', we are saying that we want to use the calculated
+    # mean and standard deviation on the dataset. Other normalization methods
+    # should be added as more pre-trained methods are supported.
+    if normalization == 'data':
+        # This normalization was calculated by taking several sample
+        # images (as tensors) and calculating the average RGB value along with the
+        # standard deviation.
+        normalize = {
+            'mean': [0.494, 0.491, 0.499],
+            'std': [0.142, 0.141, 0.135]
+        }
+    elif normalization == 'imagenet':
+        # This normalization scheme uses the means and weights for ImageNet.
+        normalize = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225]
+        }
+    else:
+        raise NotImplementedError("This normalization scheme isn't supported.")
+    
     # Include everything but the kitchen sink...
     # we want a large collection of transformations.
     # The first four ensure that each image is represented
@@ -58,19 +76,22 @@ def _load_solar_data(augmentations):
             A.GaussianBlur(),
             A.ColorJitter(),
             A.Normalize(
-                mean=[0.494, 0.491, 0.499], std=[0.142, 0.141, 0.135]
+                mean=normalize['mean'], std=normalize['std']
             ),
             ToTensorV2(),
         ])
 
-    # Resize shouldn't typically be necessary...but just in case,
-    # the resize operation is included.
+    tr_normalize = transforms.Normalize(
+        mean=normalize['mean'], std=normalize['std']
+    )
+
     train_transform = transforms.Compose(
         [
             transforms.ToTensor(),
             tr_normalize
         ]
     )
+
     test_transform = transforms.Compose(
         [transforms.ToTensor(), tr_normalize]
     )
