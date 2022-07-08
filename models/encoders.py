@@ -7,13 +7,27 @@ from .base import resnet
 
 def load(encoder_name):
     if encoder_name == "swav":
+        print("Loading swav-imagenet pretrained weights.")
         return _load_swav()
     elif encoder_name == "none":
         print("Loading encoder with no pretrained weights.")
         return _load_base()
+    elif encoder_name == "imagenet":
+        print("Loading supervised ResNet model.")
+        return _load_imagenet()
     else:
         logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
+
+def _load_imagenet():
+    """
+    This model loads the weights from the SwAV model and places them
+    onto this version of the ResNet model which allows the layers
+    to be passed forward 
+
+    """
+    model = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
+    return _append_state_dict_to_resnet(model.state_dict())
 
 def _load_base():
     # This only loads the base encoder model
@@ -29,7 +43,9 @@ def _load_swav():
 
     """
     model = torch.hub.load("facebookresearch/swav:main", "resnet50")
-    state_dict = model.state_dict()
+    return _append_state_dict_to_resnet(model.state_dict())
+
+def _append_state_dict_to_resnet(state_dict):
 
     # Remove keys that we don't need
     state_dict.pop("fc.bias")
