@@ -1,6 +1,7 @@
 import logging
 
 import torch
+from torchvision.models import resnet50 as r50
 
 from .base import resnet
 
@@ -26,7 +27,7 @@ def _load_imagenet():
     to be passed forward 
 
     """
-    model = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
+    model = r50(pretrained=True)
     return _append_state_dict_to_resnet(model.state_dict())
 
 def _load_base():
