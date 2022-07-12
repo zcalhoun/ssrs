@@ -50,7 +50,7 @@ def _load_solar_data(normalization, augmentations, evaluate):
         # images (as tensors) and calculating the average RGB value along with the
         # standard deviation.
         print("Normalizing using the data.")
-        normalize = {"mean": [0.494, 0.491, 0.499], "std": [0.142, 0.141, 0.135]}
+        normalize = {"mean": [0.507, 0.513, 0.461], "std": [0.172, 0.133, 0.114]}
     elif normalization == "imagenet":
         print("Normalize using imagenet.")
         # This normalization scheme uses the means and weights for ImageNet.
@@ -73,11 +73,8 @@ def _load_solar_data(normalization, augmentations, evaluate):
                 A.VerticalFlip(),
                 A.Transpose(),
                 A.RandomRotate90(),
-                A.PixelDropout(),
-                A.GaussianBlur(),
-                A.ColorJitter(),
-                A.Normalize(mean=normalize["mean"], std=normalize["std"]),
                 ToTensorV2(),
+                A.Normalize(mean=normalize["mean"], std=normalize["std"]),
             ]
         )
 
