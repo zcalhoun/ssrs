@@ -11,10 +11,10 @@ from albumentations.pytorch import ToTensorV2
 from .tasks.solar import SolarPVDataset
 
 
-def load(task, normalization="data", augmentations=False, evaluate=False):
+def load(task, normalization="data", augmentations=False, evaluate=False, old=False):
     logging.debug(f"In datasets, the task {task} is being loaded.")
     task_map = {
-        "solar": _load_solar_data(normalization, augmentations, evaluate),
+        "solar": _load_solar_data(normalization, augmentations, evaluate, old),
     }
     if task not in task_map:
         logging.error(f"{task} not implemented.")
@@ -22,7 +22,7 @@ def load(task, normalization="data", augmentations=False, evaluate=False):
     return task_map[task]
 
 
-def _load_solar_data(normalization, augmentations, evaluate):
+def _load_solar_data(normalization, augmentations, evaluate, old=False):
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
@@ -50,7 +50,12 @@ def _load_solar_data(normalization, augmentations, evaluate):
         # images (as tensors) and calculating the average RGB value along with the
         # standard deviation.
         print("Normalizing using the data.")
-        normalize = {"mean": [0.507, 0.513, 0.461], "std": [0.172, 0.133, 0.114]}
+        if old:
+            print("Using old normalization")
+            normalize = {'mean': [0.494, 0.491, 0.499], 'std': [0.142, 0.141, 0.135]}
+        else:
+            print("Using new normalization")
+            normalize = {"mean": [0.507, 0.513, 0.461], "std": [0.172, 0.133, 0.114]}
     elif normalization == "imagenet":
         print("Normalize using imagenet.")
         # This normalization scheme uses the means and weights for ImageNet.
@@ -73,8 +78,6 @@ def _load_solar_data(normalization, augmentations, evaluate):
                 A.VerticalFlip(),
                 A.Transpose(),
                 A.RandomRotate90(),
-                ToTensorV2(),
-                A.Normalize(mean=normalize["mean"], std=normalize["std"]),
             ]
         )
 

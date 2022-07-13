@@ -47,6 +47,10 @@ class SolarPVDataset(Dataset):
             img = augmented["image"]
             mask = augmented["mask"]
 
+            # We still need to transform to a tensor and normalize.
+            if self.transform:
+                img = self.transform(img)
+
         else:
             # This piece of code is left so that the test set
             # gets a simple transform -- and as a legacy piece of
