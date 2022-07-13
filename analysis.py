@@ -21,13 +21,14 @@ import copy
 import matplotlib.pyplot as plt
 import joblib
 
+from sklearn.metrics import precision_recall_curve
+
 from PIL import Image
 
 from src import datasets
 from models import encoders, decoders
 
 import torch
-from torch.nn import functional as F
 
 
 def main(args):
@@ -42,13 +43,13 @@ def main(args):
     create_train_val_curve(args.experiment_path)
 
     # You only need the test dataset output.
-    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization)
+    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False)
 
     model = Model(args.experiment_path, args.device, args.model_type)
     model.to(args.device)
 
-    # TODO -- add in the ability to calculate Precision Recall curves.
-    prc = PrecisionRecall(np.linspace(0, 1, 20))
+    preds = []
+    targets = []
     calc_iou = JaccardIndex()
     iou_results = []
     # Iterate through the test images.
@@ -59,31 +60,51 @@ def main(args):
         file_name = test_dataset.files[i]
         img = img.to(args.device)
         mask = mask.to(args.device)
-
-        output = model(torch.reshape(img, (1, 3, 224, 224)))
+        with torch.no_grad():
+            output = model(torch.reshape(img, (1, 3, 224, 224)))
 
         # Convert output to labels
-
         if mask.sum().item() > 0:
             contains_mask = True
         else:
             contains_mask = False
-
+            if output.sum().item() == 0:
+                iou_results.append([file_name, contains_mask, 0])
+                continue
+            
         # Calculate IoU
         iou = calc_iou.update(output, mask)
-        iou_results.append([file_name, contains_mask, iou.item()])
+        # pdb.set_trace()
+        iou_results.append([file_name, contains_mask, iou])
         # Calculate precision / recall
-        prc.update(output, mask)
+        preds.append(output.cpu().numpy().flatten())
+        targets.append(mask.cpu().numpy().flatten())
+        # prc.update(output, mask)
+
+    print(f"Experiment path: {args.experiment_path}")
+    print(f"IoU: {calc_iou.value}")
 
     # Create figure for the examples
+    print("Generating examples...")
     generate_examples(model, test_dataset, args.task, args.dump_path)
     # Save iou as pandas array
     iou_results.append(['total', None, calc_iou.value])
     df = pd.DataFrame(iou_results, columns=['file_name', 'contains_mask', 'iou'])
     df.to_csv(os.path.join(args.dump_path, 'iou.csv'))
-    # Save precision recall as numpy array
-    joblib.dump(prc, os.path.join(args.dump_path, 'prc.joblib'))
-    create_precision_recall_curve(prc, args.dump_path)
+
+    create_precision_recall_curve(preds, targets, args.dump_path)
+
+
+def create_images_only(args):
+    """
+    This function is meant as a helpful way to generate images when you
+    find more interesting examples you want to look at.
+    """
+    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False)
+    model = Model(args.experiment_path, args.device, args.model_type)
+    model.to(args.device)
+    generate_examples(model, test_dataset, args.task, args.dump_path)
+
 
 @torch.no_grad()
 def generate_examples(model, dataset, task, dump_path, threshold=0.5):
@@ -131,22 +152,30 @@ def generate_examples(model, dataset, task, dump_path, threshold=0.5):
         plt.savefig(os.path.join(dump_path, file_name + ".png"))
 
 
+def create_precision_recall_curve(preds, targets, dump_path):
+    preds = np.array(preds).flatten()
+    targets = np.array(targets).flatten()
 
-def create_precision_recall_curve(prc, dump_path):
-    precision = []
-    recall = []
-    for score in prc.scores:
-        precision.append((score['tp'] / (score['tp'] + score['fp'])))
-        recall.append((score['tp'] / (score['tp'] + score['fn'])))
-
+    precision, recall, t = precision_recall_curve(targets, preds)
+    plt.clf()
     plt.plot(recall, precision)
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.savefig(os.path.join(dump_path, "precision_recall.png"))
 
+    df = pd.DataFrame({
+        'recall': recall,
+        'precision': precision
+    })
+
+    max_f1 = ((2 * precision * recall) / (precision + recall)).max()
+
+    print(f"The max F1 score is {max_f1}.")
+    df.to_csv(os.path.join(dump_path, "precision_recall.csv"))
+
 
 class JaccardIndex():
-    def __init__(self, threshold = 0.5):
+    def __init__(self, threshold=0.5):
         self.numerator = 0
         self.denominator = 0
         self.value = 0
@@ -156,11 +185,11 @@ class JaccardIndex():
     def update(self, preds, target):
         o_2 = copy.deepcopy(preds)
         o_2[o_2 < self.threshold] = 0
-        o_2[o_2 > self.threshold] = 1
+        o_2[o_2 >= self.threshold] = 1
 
         intersection = (o_2 * target).sum()
 
-        union = preds.sum() + target.sum() - intersection
+        union = o_2.sum() + target.sum() - intersection
 
         # Prevent dividing by zero
         if union == 0:
@@ -169,7 +198,7 @@ class JaccardIndex():
         self.denominator += union
         self.value = self.numerator / self.denominator
 
-        return intersection / union
+        return (intersection / union).item()
 
     def __repr__(self):
         return self.numerator / self.denominator
@@ -190,13 +219,17 @@ class PrecisionRecall():
 
     def update(self, pred, target):
         all_ones = torch.ones(target.shape).to(target.device)
+        if (pred.sum() < self.thresholds.min()) and (target.sum() == 0):
+            # Don't worry about calculating true negatives.
+            return
+
         for i, threshold in enumerate(self.thresholds):
             # Calculate the tp, fp, fn, tn for each of the
             # thresholds
             # Calculate mask for threshold
             output = copy.deepcopy(pred[0])
             output[output < threshold] = 0
-            output[output > threshold] = 1
+            output[output >= threshold] = 1
             # Calculate tp, fp, tn, fp and add it to
             # the scores.
             self.scores[i]['tp'] += (output * target).sum().type(torch.int).item()
@@ -210,6 +243,18 @@ class PrecisionRecall():
                 (all_ones - output) * target
             ).sum().type(torch.int).item()
 
+    def get_max_f1(self,):
+        best_f1 = 0
+        eps = 1e-6 # Needed to prevent dividing by zero
+        for score in self.scores:
+            precision = (score['tp'] + eps) / (score['tp'] + score['fp'] + eps)
+            recall = score['tp'] / (score['tp'] + score['fn'])
+            f1 = (2 * precision * recall) / (precision + recall)
+            if f1 > best_f1:
+                best_f1 = f1
+
+        return best_f1
+
 
 def create_train_val_curve(experiment_path, figsize=(5, 5)):
     df = pd.read_csv(os.path.join(experiment_path, "performance.csv"))
@@ -221,7 +266,7 @@ def create_train_val_curve(experiment_path, figsize=(5, 5)):
     plt.plot(train["epoch"], train["loss"], label="train")
     plt.plot(val["epoch"], val["loss"], label="val")
     plt.xlabel("Epoch")
-    plt.ylabel("Avg Loss (BCE)")
+    plt.ylabel("Avg Loss (1 - SoftIoU)")
     plt.legend()
     plt.savefig(os.path.join(experiment_path, "train_val.png"))
     plt.clf()
@@ -302,6 +347,16 @@ if __name__ == "__main__":
         required=True
     )
 
+    parser.add_argument(
+        "--generate_examples_only",
+        type=bool,
+        default=False,
+        help="If you only want to generate samples rather than calculate statistics."
+    )
+
     args = parser.parse_args()
 
-    main(args)
+    if args.generate_examples_only:
+        create_images_only(args)
+    else:
+        main(args)
