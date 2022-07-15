@@ -9,9 +9,9 @@ from torch.utils.data import Dataset
 
 class SolarPVDataset(Dataset):
     def __init__(self, path, files, mask_path, transform=None, augmentations=None):
-        self.path = path
-        self.files = files
-        self.mask_path = mask_path
+        self.path = path # Path to images
+        self.files = files # files in the image path
+        self.mask_path = mask_path # Path masks
         self.transform = transform
         self.aug = augmentations
 
@@ -46,10 +46,6 @@ class SolarPVDataset(Dataset):
             augmented = self.aug(image=img, mask=mask)
             img = augmented["image"]
             mask = augmented["mask"]
-
-            # We still need to transform to a tensor and normalize.
-            if self.transform:
-                img = self.transform(img)
 
         else:
             # This piece of code is left so that the test set

@@ -78,6 +78,11 @@ def _load_solar_data(normalization, augmentations, evaluate, old=False):
                 A.VerticalFlip(),
                 A.Transpose(),
                 A.RandomRotate90(),
+                A.Normalize(
+                    mean=normalize['mean'],
+                    std=normalize['std']
+                ),
+                ToTensorV2()
             ]
         )
 
