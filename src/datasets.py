@@ -18,7 +18,7 @@ def load(task, normalization='data', augmentations=False):
         "solar": _load_solar_data(normalization, augmentations),
         "building": _load_building_data(normalization, augmentations)
     }
-    if task not in task_map:
+    if task not in task_map.keys():
         logging.error(f"{task} not implemented.")
         raise NotImplementedError("This task is not supported at this time.")
     return task_map[task]
@@ -121,10 +121,10 @@ def _load_solar_data(normalization, augmentations):
 
 def _load_building_data(normalization, augmentations):
     # Paths to train and test set (as split from INRIA)
-    train_imgs_path = "/home/sl636/inria/AerialImageDataset/train/train_images/"
-    train_masks_path = "/home/sl636/inria/AerialImageDataset/train/train_masks/"
-    val_imgs_path = "/home/sl636/inria/AerialImageDataset/train/val_images/"
-    val_masks_path = "/home/sl636/inria/AerialImageDataset/train/val_masks/"
+    train_imgs_path = "/home/sl636/inria/AerialImageDataset/retiled_train_images/"
+    train_masks_path = "/home/sl636/inria/AerialImageDataset/retiled_train_masks/"
+    val_imgs_path = "/home/sl636/inria/AerialImageDataset/retiled_val_images/"
+    val_masks_path = "/home/sl636/inria/AerialImageDataset/retiled_val_masks/"
 
     train_imgs = os.listdir(train_imgs_path)
     val_imgs = os.listdir(val_imgs_path)
@@ -145,8 +145,8 @@ def _load_building_data(normalization, augmentations):
         # standard deviation.
         print("Normalizing using the data.")
         normalize = {
-            'mean': [0.501, 0.531, 0.491],
-            'std': [0.223, 0.211, 0.202]
+            'mean': [0.406, 0.428, 0.394],
+            'std': [0.201, 0.183, 0.176]
         }
     elif normalization == 'imagenet':
         print("Normalize using imagenet.")
@@ -199,7 +199,7 @@ def _load_building_data(normalization, augmentations):
     else:
         train_dataset = BuildingSegmentationDataset(
             train_imgs_path, train_imgs, train_masks_path,
-            transform=train_transform, augmentations=aug
+            transform=train_transform
         )
     # Load the test dataset
     logging.debug("Creating the test dataset.")

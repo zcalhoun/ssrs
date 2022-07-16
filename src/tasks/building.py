@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import cv2
 from PIL import Image
 
@@ -15,20 +16,20 @@ class BuildingSegmentationDataset(Dataset):
         self.aug = augmentations
 
     def __len__(self):
-        return len(self.files)
+        return len(self.images)
 
     def __getitem__(self, idx):
 
         # Load the image
-        img_name = self.files[idx]
+        img_name = self.images[idx]
 
         # TODO: ensure mask_name is right
         mask_name = self.mask_path+img_name+'.npy'
 
         if os.path.exists(mask_name):
-            mask = torch.load(mask_name)
+            mask = np.load(mask_name)
         else:
-            mask = torch.zeros((1, 224, 224))
+            mask = np.zeros((224, 224))
 
         # Apply albumentations augmentations
         # before applying the standard transform
@@ -42,6 +43,9 @@ class BuildingSegmentationDataset(Dataset):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             # Albumentations works more nicely if you
             # have the mask as a 2D array
+
+            # TODO: check if this is needed, as masks are loaded as npy files
+
             mask = mask.numpy()[0]
             augmented = self.aug(image=img, mask=mask)
             img = augmented["image"]
@@ -56,4 +60,4 @@ class BuildingSegmentationDataset(Dataset):
             if self.transform:
                 img = self.transform(img)
 
-        return img.type(torch.FloatTensor), mask.type(torch.LongTensor)
+            return img.type(torch.FloatTensor), torch.from_numpy(mask).type(torch.LongTensor)
