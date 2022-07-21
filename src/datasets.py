@@ -121,10 +121,10 @@ def _load_solar_data(normalization, augmentations):
 
 def _load_building_data(normalization, augmentations):
     # Paths to train and test set (as split from INRIA)
-    train_imgs_path = "/home/sl636/inria/AerialImageDataset/retiled_train_images/"
-    train_masks_path = "/home/sl636/inria/AerialImageDataset/retiled_train_masks/"
-    val_imgs_path = "/home/sl636/inria/AerialImageDataset/retiled_val_images/"
-    val_masks_path = "/home/sl636/inria/AerialImageDataset/retiled_val_masks/"
+    train_imgs_path = "/scratch/saad/retiled_train_images/retiled_train_images/"
+    train_masks_path = "/scratch/saad/retiled_train_masks/retiled_train_masks/"
+    val_imgs_path = "/scratch/saad/retiled_val_images/retiled_val_images/"
+    val_masks_path = "/scratch/saad/retiled_val_masks/retiled_val_masks/"
 
     train_imgs = os.listdir(train_imgs_path)
     val_imgs = os.listdir(val_imgs_path)
