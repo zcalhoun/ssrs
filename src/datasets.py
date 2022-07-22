@@ -14,17 +14,17 @@ from .tasks.building import BuildingSegmentationDataset
 
 def load(task, normalization="data", augmentations=False, evaluate=False, old=False):
     logging.debug(f"In datasets, the task {task} is being loaded.")
-    task_map = {
-        "solar": _load_solar_data(normalization, augmentations, evaluate, old),
-        "building": _load_building_data(normalization, augmentations)
-    }
-    if task not in task_map:
+    if task == "solar":
+        return _load_solar_data(normalization, augmentations, evaluate, old)
+    elif task == "building":
+        return _load_building_data(normalization, augmentations)
+    else:
         logging.error(f"{task} not implemented.")
         raise NotImplementedError("This task is not supported at this time.")
-    return task_map[task]
 
 
 def _load_solar_data(normalization, augmentations, evaluate, old=False):
+    print("Loading solar dataset")
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
@@ -118,6 +118,7 @@ def _load_solar_data(normalization, augmentations, evaluate, old=False):
 
 
 def _load_building_data(normalization, augmentations):
+    print("Loading building dataset")
     # Paths to train and test set (as split from INRIA)
     train_imgs_path = "/home/sl636/inria/AerialImageDataset/train/train_images/"
     train_masks_path = "/home/sl636/inria/AerialImageDataset/train/train_masks/"

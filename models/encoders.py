@@ -16,9 +16,25 @@ def load(encoder_name):
     elif encoder_name == "imagenet":
         print("Loading supervised ResNet model.")
         return _load_imagenet()
+    elif encoder_name == "swav-s2":
+        print("Loading swav-solar-2 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s2.pt')
     else:
         logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
+
+
+def _load_swav_pretrained(model_path):
+    """
+    This function loads the swav encoder pretrained on the solar training
+    dataset.
+    """
+    state_dict = torch.load(model_path)
+    base_model = resnet.resnet50(inter_features=True)
+    base_model.load_state_dict(state_dict)
+
+    return base_model
+
 
 def _load_imagenet():
     """
@@ -30,11 +46,13 @@ def _load_imagenet():
     model = r50(pretrained=True)
     return _append_state_dict_to_resnet(model.state_dict())
 
+
 def _load_base():
     # This only loads the base encoder model
     # with no pretrained weights
     base_model = resnet.resnet50(inter_features=True)
     return base_model
+
 
 def _load_swav():
     """
@@ -45,6 +63,7 @@ def _load_swav():
     """
     model = torch.hub.load("facebookresearch/swav:main", "resnet50")
     return _append_state_dict_to_resnet(model.state_dict())
+
 
 def _append_state_dict_to_resnet(state_dict):
 

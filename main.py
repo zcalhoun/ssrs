@@ -51,7 +51,7 @@ parser.add_argument(
     "--encoder",
     type=str,
     default="swav",
-    choices=["swav", "none", "imagenet"],
+    choices=["swav", "none", "imagenet", "swav-s2"],
     help="""The encoder to use. Valid
     options include 'swav', 'none', or 'imagenet'. If you specify, 'swav', then the encoder will
     load the pretrained model using the SwAV self-supervised method on ImageNet. 'none' loads 
