@@ -43,7 +43,7 @@ def main(args):
     create_train_val_curve(args.experiment_path)
 
     # You only need the test dataset output.
-    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False)
+    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False, size=args.data_size)
 
     model = Model(args.experiment_path, args.device, args.model_type)
     model.to(args.device)
@@ -85,8 +85,8 @@ def main(args):
     print(f"IoU: {calc_iou.value}")
 
     # Create figure for the examples
-    print("Generating examples...")
-    generate_examples(model, test_dataset, args.task, args.dump_path)
+    # print("Generating examples...")
+    # generate_examples(model, test_dataset, args.task, args.dump_path)
     # Save iou as pandas array
     iou_results.append(['total', None, calc_iou.value])
     df = pd.DataFrame(iou_results, columns=['file_name', 'contains_mask', 'iou'])
@@ -352,6 +352,13 @@ if __name__ == "__main__":
         type=bool,
         default=False,
         help="If you only want to generate samples rather than calculate statistics."
+    )
+
+    parser.add_argument(
+        "--data_size",
+        type=str,
+        default='normal',
+        help="Use this if you want to look at a smaller dataset."
     )
 
     args = parser.parse_args()
