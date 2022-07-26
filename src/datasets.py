@@ -1,6 +1,7 @@
 import os
 import logging
 import numpy as np
+import pandas as pd
 import joblib
 
 from torchvision import transforms
@@ -10,18 +11,87 @@ from albumentations.pytorch import ToTensorV2
 
 from .tasks.solar import SolarPVDataset
 from .tasks.building import BuildingSegmentationDataset
+from .tasks.cropdelineation import CropDelineationDataset
 
 
 def load(task, normalization="data", augmentations=False, evaluate=False, old=False):
     logging.debug(f"In datasets, the task {task} is being loaded.")
-    task_map = {
-        "solar": _load_solar_data(normalization, augmentations, evaluate, old),
-        "building": _load_building_data(normalization, augmentations)
-    }
-    if task not in task_map:
-        logging.error(f"{task} not implemented.")
-        raise NotImplementedError("This task is not supported at this time.")
-    return task_map[task]
+
+    if task == "solar":
+        print("Loading solar dataset.")
+        return _load_solar_data(normalization, augmentations, evaluate, old)
+    elif task == "building":
+        print("Loading building dataset.")
+        return _load_building_data(normalization, augmentations)
+    elif task == "crop_delineation":
+        print("Loading crop delineation dataset.")
+        return _load_cropdel_data(normalization, augmentations)
+
+
+def _load_cropdel_data(normalization, augmentations):
+    """
+    This function takes care of loading the crop segmentation
+    data for training the model.
+    """
+    # Change this to false if you want to use a different set of masks
+    mask_filled = True
+    data_path = "/scratch/crop-delineation/data/"
+
+    # Get the list of file names to pass.
+    file_map = pd.read_csv(data_path + "clean_data.csv")
+    train_files = list(file_map[file_map['split'] == 'train']['indices'])
+    val_files = list(file_map[file_map['split'] == 'val']['indices'])
+    
+    if normalization == "data":
+        # TODO -- calculate this
+        normalize = {"mean": [0.238, 0.297, 0.317], "std": [0.187, 0.123, 0.114]}
+    else:
+        normalize = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
+    
+    # Add augmentations
+    if augmentations:
+        print("Adding augmentations...")
+        aug = A.Compose(
+            [
+                A.RandomRotate90(),
+                # A.VerticalFlip(),
+                # A.Transpose(),
+                # A.RandomRotate90(),
+                A.Normalize(
+                    mean=normalize['mean'],
+                    std=normalize['std']
+                ),
+                ToTensorV2()
+            ]
+        )
+
+    tr_normalize = transforms.Normalize(mean=normalize["mean"], std=normalize["std"])
+
+    train_transform = transforms.Compose([transforms.ToTensor()])  # tr_normalize])
+
+    test_transform = transforms.Compose([transforms.ToTensor()])  # tr_normalize])
+
+    # Create the train dataset
+    logging.debug("Creating the training dataset.")
+    if augmentations:
+        train_dataset = CropDelineationDataset(
+            data_path,
+            train_files,
+            mask_filled,
+            transform=train_transform,
+            augmentations=aug,
+        )
+    else:
+        train_dataset = CropDelineationDataset(
+            data_path, train_files, mask_filled, transform=train_transform
+        )
+    # Load the test dataset
+    logging.debug("Creating the test dataset.")
+    test_dataset = CropDelineationDataset(
+        data_path, val_files, mask_filled, transform=test_transform
+    )
+    # Return the training and test dataset
+    return train_dataset, test_dataset
 
 
 def _load_solar_data(normalization, augmentations, evaluate, old=False):
