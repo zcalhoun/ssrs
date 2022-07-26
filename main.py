@@ -43,6 +43,13 @@ parser.add_argument(
     when transforming the data for the model. Default is data-specific, but if you are using an
     ImageNet pretrained model, then specify 'imagenet' for quicker convergence.""",
 )
+parser.add_argument(
+    "--data_size",
+    type=str,
+    default="normal",
+    help="""Some datasets allow you to specify 'small' so that you have a data limited
+    experiment."""
+)
 
 ###################
 # Encoder arguments
@@ -51,7 +58,7 @@ parser.add_argument(
     "--encoder",
     type=str,
     default="swav",
-    choices=["swav", "none", "imagenet", "swav-s2"],
+    choices=["swav", "none", "imagenet", "swav-s1", "swav-s2"],
     help="""The encoder to use. Valid
     options include 'swav', 'none', or 'imagenet'. If you specify, 'swav', then the encoder will
     load the pretrained model using the SwAV self-supervised method on ImageNet. 'none' loads 
@@ -163,7 +170,7 @@ def main():
 
     # Load the train dataset and the test dataset
     logging.info("Loading dataset...")
-    train_data, test_data = datasets.load(args.task, args.normalization, args.augment)
+    train_data, test_data = datasets.load(args.task, args.normalization, args.augment, size=args.data_size)
 
     # Create the dataloader
     logging.info("Creating data loaders...")
@@ -235,7 +242,7 @@ def train(loader, encoder, decoder, optimizer, criterion):
     avg_loss = utils.AverageMeter()
     num_batches = len(loader)
     for batch_idx, (inp, target) in enumerate(loader):
-        if batch_idx % 100 == 0:
+        if batch_idx % 10 == 0:
             print(f"Beginning batch {batch_idx} of {num_batches}")
         logging.debug(f"Training batch {batch_idx}...")
         # Move to the GPU

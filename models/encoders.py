@@ -19,6 +19,9 @@ def load(encoder_name):
     elif encoder_name == "swav-s2":
         print("Loading swav-solar-2 pretrained weights.")
         return _load_swav_pretrained('./models/swav/swav-s2.pt')
+    elif encoder_name == "swav-s1":
+        print("Loading swav-solar-1 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s1.pt')
     else:
         logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
