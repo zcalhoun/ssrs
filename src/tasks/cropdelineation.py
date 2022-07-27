@@ -57,5 +57,6 @@ class CropDelineationDataset(Dataset):
                 img = self.transform(img)
 
             mask = np.array(Image.open(mask_name)) / 255
+            mask = torch.from_numpy(mask)
 
-        return img.type(torch.FloatTensor), torch.from_numpy(mask).type(torch.LongTensor)
+        return img.type(torch.FloatTensor), mask.type(torch.LongTensor)

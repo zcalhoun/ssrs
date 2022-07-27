@@ -43,7 +43,7 @@ def main(args):
     create_train_val_curve(args.experiment_path)
 
     # You only need the test dataset output.
-    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False)
+    test_dataset = datasets.load(task=args.task, evaluate=True, normalization=args.normalization, old=False)
 
     model = Model(args.experiment_path, args.device, args.model_type)
     model.to(args.device)
@@ -100,7 +100,7 @@ def create_images_only(args):
     This function is meant as a helpful way to generate images when you
     find more interesting examples you want to look at.
     """
-    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False)
+    test_dataset = datasets.load(task=args.task, evaluate=True, normalization=args.normalization, old=False)
     model = Model(args.experiment_path, args.device, args.model_type)
     model.to(args.device)
     generate_examples(model, test_dataset, args.task, args.dump_path)
