@@ -16,6 +16,9 @@ def load(encoder_name):
     elif encoder_name == "imagenet":
         print("Loading supervised ResNet model.")
         return _load_imagenet()
+    elif encoder_name == "swav-s3":
+        print("Loading swav-solar-3 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s3.pt')
     elif encoder_name == "swav-s2":
         print("Loading swav-solar-2 pretrained weights.")
         return _load_swav_pretrained('./models/swav/swav-s2.pt')
