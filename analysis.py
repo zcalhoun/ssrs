@@ -86,7 +86,7 @@ def main(args):
 
     # Create figure for the examples
     print("Generating examples...")
-    generate_examples(model, test_dataset, args.task, args.dump_path)
+    # generate_examples(model, test_dataset, args.task, args.dump_path)
     # Save iou as pandas array
     iou_results.append(['total', None, calc_iou.value])
     df = pd.DataFrame(iou_results, columns=['file_name', 'contains_mask', 'iou'])
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--task",
-        choices=["solar"],
+        choices=["solar", "crop_delineation"],
         type=str,
         help="The task of the experiment to analyze.",
         required=True

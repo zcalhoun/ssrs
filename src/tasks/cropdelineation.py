@@ -13,9 +13,9 @@ class CropDelineationDataset(Dataset):
         self.files = files  # files in the image path
         self.mask_filled = mask_filled  # Path masks
         if mask_filled:
-            self.mask_path = path + 'masks/'
-        else:
             self.mask_path = path + 'masks_filled/'
+        else:
+            self.mask_path = path + 'masks/'
         self.transform = transform
         self.aug = augmentations
 

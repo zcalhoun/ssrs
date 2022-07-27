@@ -25,23 +25,24 @@ def load(task, normalization="data", augmentations=False, evaluate=False, old=Fa
         return _load_building_data(normalization, augmentations)
     elif task == "crop_delineation":
         print("Loading crop delineation dataset.")
-        return _load_cropdel_data(normalization, augmentations)
+        return _load_cropdel_data(normalization, augmentations, evaluate)
 
 
-def _load_cropdel_data(normalization, augmentations):
+def _load_cropdel_data(normalization, augmentations, evaluate):
+    print(f"Data evaluate: {evaluate}")
     """
     This function takes care of loading the crop segmentation
     data for training the model.
     """
     # Change this to false if you want to use a different set of masks
-    mask_filled = True
+    mask_filled = False
     data_path = "/scratch/crop-delineation/data/"
 
     # Get the list of file names to pass.
     file_map = pd.read_csv(data_path + "clean_data.csv")
     train_files = list(file_map[file_map['split'] == 'train']['indices'])
     val_files = list(file_map[file_map['split'] == 'val']['indices'])
-    
+    test_files = list(file_map[file_map['split'] == 'test']['indices'])
     if normalization == "data":
         # TODO -- calculate this
         normalize = {"mean": [0.238, 0.297, 0.317], "std": [0.187, 0.123, 0.114]}
@@ -67,9 +68,9 @@ def _load_cropdel_data(normalization, augmentations):
 
     tr_normalize = transforms.Normalize(mean=normalize["mean"], std=normalize["std"])
 
-    train_transform = transforms.Compose([transforms.ToTensor()])  # tr_normalize])
+    train_transform = transforms.Compose([transforms.ToTensor(), tr_normalize])
 
-    test_transform = transforms.Compose([transforms.ToTensor()])  # tr_normalize])
+    test_transform = transforms.Compose([transforms.ToTensor(), tr_normalize])
 
     # Create the train dataset
     logging.debug("Creating the training dataset.")
@@ -87,11 +88,17 @@ def _load_cropdel_data(normalization, augmentations):
         )
     # Load the test dataset
     logging.debug("Creating the test dataset.")
-    test_dataset = CropDelineationDataset(
+    val_dataset = CropDelineationDataset(
         data_path, val_files, mask_filled, transform=test_transform
     )
     # Return the training and test dataset
-    return train_dataset, test_dataset
+    test_dataset = CropDelineationDataset(
+        data_path, test_files, mask_filled, transform=test_transform
+    )
+    if evaluate:
+        return test_dataset
+    else:
+        return train_dataset, val_dataset
 
 
 def _load_solar_data(normalization, augmentations, evaluate, old=False):
