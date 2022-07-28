@@ -5,6 +5,7 @@ from PIL import Image
 
 import torch
 from torch.utils.data import Dataset
+import torchvision.transforms as transforms
 
 
 class BuildingSegmentationDataset(Dataset):
@@ -22,12 +23,12 @@ class BuildingSegmentationDataset(Dataset):
 
         # Load the image
         img_name = self.images[idx]
-
         # TODO: ensure mask_name is right
-        mask_name = self.mask_path+img_name+'.npy'
-
+        mask_name = self.mask_path+img_name
         if os.path.exists(mask_name):
-            mask = np.load(mask_name)
+            mask = cv2.imread(mask_name)
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY) / 255
+
         else:
             mask = np.zeros((224, 224))
 
@@ -44,8 +45,6 @@ class BuildingSegmentationDataset(Dataset):
             # Albumentations works more nicely if you
             # have the mask as a 2D array
 
-            # TODO: check if this is needed, as masks are loaded as npy files
-
             mask = mask.numpy()[0]
             augmented = self.aug(image=img, mask=mask)
             img = augmented["image"]
@@ -60,4 +59,7 @@ class BuildingSegmentationDataset(Dataset):
             if self.transform:
                 img = self.transform(img)
 
-            return img.type(torch.FloatTensor), torch.from_numpy(mask).type(torch.LongTensor)
+            transform = transforms.Compose([transforms.PILToTensor()])
+            img_tensor = transform(img)
+            print(torch.from_numpy(mask))
+            return img_tensor.type(torch.FloatTensor), torch.from_numpy(mask).type(torch.LongTensor)
