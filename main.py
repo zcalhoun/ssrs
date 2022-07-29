@@ -22,7 +22,7 @@ parser.add_argument(
     "--task",
     type=str,
     default=None,
-    choices=["solar"],
+    choices=["solar", "crop_delineation"],
     required=True,
     help="""The training task to attempt. Valid tasks 
     include 'solar' [todo -- add the list of tasks as they are developed].""",
