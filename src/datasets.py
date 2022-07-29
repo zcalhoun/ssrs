@@ -4,7 +4,7 @@ import numpy as np
 import joblib
 
 from torchvision import transforms
-
+from natsort import natsorted
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
@@ -121,13 +121,18 @@ def _load_solar_data(normalization, augmentations):
 
 def _load_building_data(normalization, augmentations):
     # Paths to train and test set (as split from INRIA)
-    train_imgs_path = "/scratch/saad/retiled_train_images/retiled_train_images/"
-    train_masks_path = "/scratch/saad/retiled_train_masks/retiled_train_masks/"
-    val_imgs_path = "/scratch/saad/retiled_val_images/retiled_val_images/"
-    val_masks_path = "/scratch/saad/retiled_val_masks/retiled_val_masks/"
+    # train_imgs_path = "/scratch/saad/1000_images/"
+    # train_masks_path = "/scratch/saad/1000_masks/"
+    # val_imgs_path = "/scratch/saad/1000_val_images/"
+    # val_masks_path = "/scratch/saad/1000_val_masks/"
 
-    train_imgs = os.listdir(train_imgs_path)
-    val_imgs = os.listdir(val_imgs_path)
+    train_imgs_path = "/scratch/saad/1000_images/"
+    train_masks_path = "/scratch/saad/1000_masks/"
+    val_imgs_path = "/scratch/saad/1000_val_images/"
+    val_masks_path = "/scratch/saad/1000_val_masks/"
+
+    train_imgs = natsorted(os.listdir(train_imgs_path))
+    val_imgs = natsorted(os.listdir(val_imgs_path))
 
     logging.debug(
         f"We are using {len(train_imgs)} training images and {len(val_imgs)} validation images from the INRIA building dataset.")

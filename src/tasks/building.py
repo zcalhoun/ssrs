@@ -59,7 +59,7 @@ class BuildingSegmentationDataset(Dataset):
             if self.transform:
                 img = self.transform(img)
 
-            transform = transforms.Compose([transforms.PILToTensor()])
-            img_tensor = transform(img)
-            print(torch.from_numpy(mask))
-            return img_tensor.type(torch.FloatTensor), torch.from_numpy(mask).type(torch.LongTensor)
+            #transform = transforms.Compose([transforms.PILToTensor()])
+            #img_tensor = transform(img)
+            # print(torch.from_numpy(mask))
+            return img.type(torch.FloatTensor), torch.from_numpy(mask).type(torch.LongTensor)
