@@ -84,8 +84,6 @@ def main(args):
     print(f"Experiment path: {args.experiment_path}")
     print(f"IoU: {calc_iou.value}")
 
-    # Create figure for the examples
-    # print("Generating examples...")
     # generate_examples(model, test_dataset, args.task, args.dump_path)
     # Save iou as pandas array
     iou_results.append(['total', None, calc_iou.value])
@@ -100,7 +98,7 @@ def create_images_only(args):
     This function is meant as a helpful way to generate images when you
     find more interesting examples you want to look at.
     """
-    _, test_dataset = datasets.load(task=args.task, normalization=args.normalization, old=False)
+    test_dataset = datasets.load(task=args.task, evaluate=True, normalization=args.normalization, old=False)
     model = Model(args.experiment_path, args.device, args.model_type)
     model.to(args.device)
     generate_examples(model, test_dataset, args.task, args.dump_path)
@@ -312,7 +310,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--task",
-        choices=["solar"],
+        choices=["solar", "crop_delineation"],
         type=str,
         help="The task of the experiment to analyze.",
         required=True
