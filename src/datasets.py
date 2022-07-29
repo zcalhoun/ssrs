@@ -14,9 +14,8 @@ from .tasks.building import BuildingSegmentationDataset
 from .tasks.cropdelineation import CropDelineationDataset
 
 
-def load(task, normalization="data", augmentations=False, evaluate=False, old=False):
+def load(task, normalization="data", augmentations=False, evaluate=False, old=False, size="small"):
     logging.debug(f"In datasets, the task {task} is being loaded.")
-
     if task == "solar":
         print("Loading solar dataset.")
         return _load_solar_data(normalization, augmentations, evaluate, old)
@@ -101,11 +100,17 @@ def _load_cropdel_data(normalization, augmentations, evaluate):
         return train_dataset, val_dataset
 
 
-def _load_solar_data(normalization, augmentations, evaluate, old=False):
+def _load_solar_data(normalization, augmentations, evaluate, old=False, size="small"):
+    print("Loading solar dataset")
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
-    files = joblib.load("/scratch/zach/train_test_split.joblib")
+    if size == "small":
+        print("Loading small dataset")
+        files = joblib.load("/scratch/zach/train_test_split_small.joblib")
+    else:
+        print("Loading full dataset")
+        files = joblib.load("/scratch/zach/train_test_split.joblib")
     logging.debug(f"There are {len(files)} files in the Frenso dataset.")
 
     # Split files into two lists with an 80/20 split.
@@ -195,6 +200,7 @@ def _load_solar_data(normalization, augmentations, evaluate, old=False):
 
 
 def _load_building_data(normalization, augmentations):
+    print("Loading building dataset")
     # Paths to train and test set (as split from INRIA)
     train_imgs_path = "/home/sl636/inria/AerialImageDataset/train/train_images/"
     train_masks_path = "/home/sl636/inria/AerialImageDataset/train/train_masks/"
