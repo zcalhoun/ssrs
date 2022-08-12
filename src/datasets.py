@@ -26,7 +26,6 @@ def load(task, normalization="data", augmentations=False, evaluate=False, old=Fa
         print("Loading crop delineation dataset.")
         return _load_cropdel_data(normalization, augmentations, evaluate, size)
 
-
 def _load_cropdel_data(normalization, augmentations, evaluate, size=None):
     print(f"Data evaluate: {evaluate}")
     """
