@@ -18,15 +18,15 @@ def load(task, normalization="data", augmentations=False, evaluate=False, old=Fa
     logging.debug(f"In datasets, the task {task} is being loaded.")
     if task == "solar":
         print("Loading solar dataset.")
-        return _load_solar_data(normalization, augmentations, evaluate, old)
+        return _load_solar_data(normalization, augmentations, evaluate, old, size)
     elif task == "building":
         print("Loading building dataset.")
         return _load_building_data(normalization, augmentations)
     elif task == "crop_delineation":
         print("Loading crop delineation dataset.")
-        return _load_cropdel_data(normalization, augmentations, evaluate)
+        return _load_cropdel_data(normalization, augmentations, evaluate, size)
 
-def _load_cropdel_data(normalization, augmentations, evaluate):
+def _load_cropdel_data(normalization, augmentations, evaluate, size=None):
     print(f"Data evaluate: {evaluate}")
     """
     This function takes care of loading the crop segmentation
@@ -35,10 +35,15 @@ def _load_cropdel_data(normalization, augmentations, evaluate):
     # Change this to false if you want to use a different set of masks
     mask_filled = False
     data_path = "/scratch/crop-delineation/data/"
-
-    # Get the list of file names to pass.
+    # This loads the list of files to reference
     file_map = pd.read_csv(data_path + "clean_data.csv")
-    train_files = list(file_map[file_map['split'] == 'train']['indices'])
+    if size is not None:
+        print(f"Loading crop delineation training data with size {size}.")
+        train_files = list(joblib.load(data_path + f"train_{size}.joblib"))
+    else:
+        print("Loading the complete training dataset.")
+        train_files = list(file_map[file_map['split'] == 'train']['indices'])
+    
     val_files = list(file_map[file_map['split'] == 'val']['indices'])
     test_files = list(file_map[file_map['split'] == 'test']['indices'])
     if normalization == "data":
@@ -53,9 +58,9 @@ def _load_cropdel_data(normalization, augmentations, evaluate):
         aug = A.Compose(
             [
                 A.RandomRotate90(),
-                # A.VerticalFlip(),
-                # A.Transpose(),
-                # A.RandomRotate90(),
+                A.VerticalFlip(),
+                A.HorizontalFlip(),
+                A.Transpose(),
                 A.Normalize(
                     mean=normalize['mean'],
                     std=normalize['std']
@@ -99,14 +104,33 @@ def _load_cropdel_data(normalization, augmentations, evaluate):
         return train_dataset, val_dataset
 
 
-def _load_solar_data(normalization, augmentations, evaluate, old=False, size="small"):
-    print("Loading solar dataset")
+def _load_solar_data(normalization, augmentations, evaluate, old=False, size="normal"):
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
-    if size == "small":
-        print("Loading small dataset")
-        files = joblib.load("/scratch/zach/train_test_split_small.joblib")
+
+    if size != 'normal':
+        val_files = joblib.load("/scratch/zach/train_test_split_1024.joblib")
+
+        if size == "64":
+            print("Loading dataset with 64 training examples")
+            files = joblib.load("/scratch/zach/train_test_split_64.joblib")
+        elif size == "128":
+            print("Loading dataset with 128 training examples")
+            files = joblib.load("/scratch/zach/train_test_split_128.joblib")
+        elif size == "256":
+            print("Loading dataset with 256 training examples")
+            files = joblib.load("/scratch/zach/train_test_split_256.joblib")
+        elif size == "512":
+            print("Loading dataset with 512 training examples")
+            files = joblib.load("/scratch/zach/train_test_split_512.joblib")
+        elif size == "1024":
+            print("Loading dataset with 1024 training examples")
+            files = joblib.load("/scratch/zach/train_test_split_1024.joblib")
+
+        # Make sure that the test set is the same for all trials.
+        files['test']['mask'] = val_files['test']['mask']
+        files['test']['empty'] = val_files['test']['empty']
     else:
         print("Loading full dataset")
         files = joblib.load("/scratch/zach/train_test_split.joblib")
