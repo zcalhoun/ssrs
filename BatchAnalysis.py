@@ -14,14 +14,13 @@ from sklearn.metrics import precision_recall_curve
 from src import datasets
 from models import encoders, decoders
 
-import pdb
 
 def main():
-    base_path = "./experiments/solar/data-comparison/"
+    base_path = "./experiments/crop_delineation/data-comparison/"
 
-    data = ['64']#, '128', '256', '512', '1024']
-    encoders = ['supervised', 'swav-imagenet', 'swav-s3']
-    trials = ['t1']#, 't2', 't3']
+    data = ['64', '128', '256', '512', '1024']
+    encoders = ['supervised', 'swav-imagenet', 'swav-c1']
+    trials = ['t1', 't2', 't3']
 
     results = {
         "datasize": [],
@@ -56,7 +55,7 @@ def main():
     # Save the dataframe
     df = pd.DataFrame(results)
 
-    df.to_csv('batch_results.csv')
+    df.to_csv('crop_delineation_batch_results.csv')
 
 
 def get_stats(model, dataloader):
@@ -160,12 +159,12 @@ class JaccardIndex():
 
 
 def get_dataloader(encoder):
-    if encoder == 'swav-s3':
+    if encoder == 'swav-c1':
         norm = 'data'
     else:
         norm = 'imagenet'
 
-    _, test_dataset = datasets.load(task="solar", normalization=norm, old=False, size="64")
+    _, test_dataset = datasets.load(task="crop_delineation", normalization=norm, old=False, size="64")
 
     return test_dataset
 

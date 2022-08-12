@@ -24,10 +24,10 @@ def load(task, normalization="data", augmentations=False, evaluate=False, old=Fa
         return _load_building_data(normalization, augmentations)
     elif task == "crop_delineation":
         print("Loading crop delineation dataset.")
-        return _load_cropdel_data(normalization, augmentations, evaluate)
+        return _load_cropdel_data(normalization, augmentations, evaluate, size)
 
 
-def _load_cropdel_data(normalization, augmentations, evaluate):
+def _load_cropdel_data(normalization, augmentations, evaluate, size=None):
     print(f"Data evaluate: {evaluate}")
     """
     This function takes care of loading the crop segmentation
@@ -36,10 +36,15 @@ def _load_cropdel_data(normalization, augmentations, evaluate):
     # Change this to false if you want to use a different set of masks
     mask_filled = False
     data_path = "/scratch/crop-delineation/data/"
-
-    # Get the list of file names to pass.
+    # This loads the list of files to reference
     file_map = pd.read_csv(data_path + "clean_data.csv")
-    train_files = list(file_map[file_map['split'] == 'train']['indices'])
+    if size is not None:
+        print(f"Loading crop delineation training data with size {size}.")
+        train_files = list(joblib.load(data_path + f"train_{size}.joblib"))
+    else:
+        print("Loading the complete training dataset.")
+        train_files = list(file_map[file_map['split'] == 'train']['indices'])
+    
     val_files = list(file_map[file_map['split'] == 'val']['indices'])
     test_files = list(file_map[file_map['split'] == 'test']['indices'])
     if normalization == "data":
