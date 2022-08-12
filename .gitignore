@@ -3,3 +3,4 @@
 *performance.csv
 experiments/*
 exp*.sh
+models/swav/

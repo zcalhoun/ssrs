@@ -85,7 +85,6 @@ def main(args):
     print(f"IoU: {calc_iou.value}")
 
     # Create figure for the examples
-    print("Generating examples...")
     # generate_examples(model, test_dataset, args.task, args.dump_path)
     # Save iou as pandas array
     iou_results.append(['total', None, calc_iou.value])
@@ -352,6 +351,13 @@ if __name__ == "__main__":
         type=bool,
         default=False,
         help="If you only want to generate samples rather than calculate statistics."
+    )
+
+    parser.add_argument(
+        "--data_size",
+        type=str,
+        default='normal',
+        help="Use this if you want to look at a smaller dataset."
     )
 
     args = parser.parse_args()
