@@ -12,11 +12,11 @@ from .tasks.solar import SolarPVDataset
 from .tasks.building import BuildingSegmentationDataset
 
 
-def load(task, normalization='data', augmentations=False):
+def load(task, normalization='data', augmentations=False, data_size=1024):
     logging.debug(f"In datasets, the task {task} is being loaded.")
     task_map = {
         "solar": _load_solar_data(normalization, augmentations),
-        "building": _load_building_data(normalization, augmentations)
+        "building": _load_building_data(normalization, augmentations, data_size)
     }
     if task not in task_map.keys():
         logging.error(f"{task} not implemented.")
@@ -119,17 +119,17 @@ def _load_solar_data(normalization, augmentations):
     return train_dataset, test_dataset
 
 
-def _load_building_data(normalization, augmentations):
+def _load_building_data(normalization, augmentations, data_size):
     # Paths to train and test set (as split from INRIA)
     # train_imgs_path = "/scratch/saad/1000_images/"
     # train_masks_path = "/scratch/saad/1000_masks/"
     # val_imgs_path = "/scratch/saad/1000_val_images/"
     # val_masks_path = "/scratch/saad/1000_val_masks/"
 
-    train_imgs_path = "/scratch/saad/1000_images/"
-    train_masks_path = "/scratch/saad/1000_masks/"
-    val_imgs_path = "/scratch/saad/1000_val_images/"
-    val_masks_path = "/scratch/saad/1000_val_masks/"
+    train_imgs_path = f"/scratch/saad/{data_size}_images/"
+    train_masks_path = f"/scratch/saad/{data_size}_masks/"
+    val_imgs_path = f"/scratch/saad/{data_size}_val_images/"
+    val_masks_path = f"/scratch/saad/{data_size}_val_masks/"
 
     train_imgs = natsorted(os.listdir(train_imgs_path))
     val_imgs = natsorted(os.listdir(val_imgs_path))

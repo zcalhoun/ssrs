@@ -32,6 +32,12 @@ parser.add_argument(
     ImageNet pretrained model, then specify 'imagenet' for quicker convergence."""
 )
 
+parser.add_argument(
+    "--data_size", type=int, default=1023, choices=[64, 128, 256, 512, 1024], required=False,
+    help="""The data size we want to use for the building task. Default is 1024, can 
+    choose from 64, 128, 256, 512, and 1024."""
+)
+
 ###################
 # Encoder arguments
 ###################
@@ -122,7 +128,7 @@ def main():
     # Load the train dataset and the test dataset
     logging.info("Loading dataset...")
     train_data, test_data = datasets.load(
-        args.task, args.normalization, args.augment)
+        args.task, args.normalization, args.augment, args.data_size)
 
     # Create the dataloader
     logging.info("Creating data loaders...")
