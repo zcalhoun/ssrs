@@ -19,9 +19,39 @@ def load(encoder_name):
     elif encoder_name == "swav-b1":
         print("Loading swav-b1.")
         return _load_swav_b1()
+    elif encoder_name == "swav-s3":
+        print("Loading swav-solar-3 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s3.pt')
+    elif encoder_name == "swav-s4":
+        print("Loading swav-solar-4 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s4.pt')
+    elif encoder_name == "swav-s2":
+        print("Loading swav-solar-2 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s2.pt')
+    elif encoder_name == "swav-s1":
+        print("Loading swav-solar-1 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s1.pt')
+    elif encoder_name == "swav-c1":
+        print("Loading swav-crop-1 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-c1.pt')
+    elif encoder_name == "swav-c2":
+        print("Loading swav-crop-2 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-c2.pt')
     else:
         logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
+
+
+def _load_swav_pretrained(model_path):
+    """
+    This function loads the swav encoder pretrained on the solar training
+    dataset.
+    """
+    state_dict = torch.load(model_path)
+    base_model = resnet.resnet50(inter_features=True)
+    base_model.load_state_dict(state_dict)
+
+    return base_model
 
 
 def _load_imagenet():
@@ -46,8 +76,7 @@ def _load_swav():
     """
     This model loads the weights from the SwAV model and places them
     onto this version of the ResNet model which allows the layers
-    to be passed forward 
-
+    to be passed forward
     """
     model = torch.hub.load("facebookresearch/swav:main", "resnet50")
     return _append_state_dict_to_resnet(model.state_dict())
