@@ -41,12 +41,13 @@ parser.add_argument(
 ###################
 # Encoder arguments
 ###################
-parser.add_argument("--encoder", type=str, default="swav", choices=['swav', 'none', 'imagenet'],
+parser.add_argument("--encoder", type=str, default="swav", choices=['swav', 'swav-b1', 'none', 'imagenet'],
                     help="""The encoder to use. Valid
-    options include 'swav', 'none', or 'imagenet'. If you specify, 'swav', then the encoder will
-    load the pretrained model using the SwAV self-supervised method on ImageNet. 'none' loads 
-    a ResNet-50 with no pretrained weights (i.e., random weights). 'imagenet' loads the 
-    supervised pretrained model on ImageNet."""
+    options include 'swav', 'swav-b1', 'none', or 'imagenet'. If you specify, 'swav', then the encoder will
+    load the pretrained model using the SwAV self-supervised method on ImageNet. 'swav-b1' loads the 
+    same pretrained model using SwAV self-supervised method on ImageNet and with an additional pretraining
+    on the target data. 'none' loads a ResNet-50 with no pretrained weights (i.e., random weights). 
+    'imagenet' loads the supervised pretrained model on ImageNet."""
                     )
 
 # Fine tuning for encoder

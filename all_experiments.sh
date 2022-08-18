@@ -12,7 +12,7 @@ do
     # python3 main.py --task $TASK \
     #     --epochs 100 \
     #     --device cuda:$CUDA \
-    #     --dump_path ./experiments/$TASK/data-comparison/$SIZE/supervised/t$RUN \
+    #     --dump_path /scratch/saad/$TASK/data-comparison/$SIZE/supervised/t$RUN \
     #     --encoder imagenet \
     #     --normalization imagenet \
     #     --fine_tune_encoder True \
@@ -20,32 +20,32 @@ do
     #     --data_size $SIZE
     # done
 
-    # SWAV-Imagenet
-    for RUN in 1 2 3
-    do
-    python3 main.py --task $TASK \
-        --epochs 100 \
-        --device cuda:$CUDA \
-        --dump_path ./experiments/$TASK/data-comparison/$SIZE/swav-imagenet/t$RUN \
-        --encoder swav \
-        --normalization imagenet \
-        --fine_tune_encoder True \
-        --batch_size 16 \
-        --data_size $SIZE
-    done
-
-
-    # # SWAV-C1
+    # # SWAV-Imagenet
     # for RUN in 1 2 3
     # do
     # python3 main.py --task $TASK \
     #     --epochs 100 \
     #     --device cuda:$CUDA \
-    #     --dump_path ./experiments/$TASK/data-comparison/$SIZE/swav-c1/t$RUN \
-    #     --encoder swav-c1 \
-    #     --normalization data \
+    #     --dump_path /scratch/saad/$TASK/data-comparison/$SIZE/swav-imagenet/t$RUN \
+    #     --encoder swav \
+    #     --normalization imagenet \
     #     --fine_tune_encoder True \
     #     --batch_size 16 \
     #     --data_size $SIZE
     # done
+
+
+    # SwAV-b1
+    for RUN in 1 2 3
+    do
+    python3 main.py --task $TASK \
+        --epochs 100 \
+        --device cuda:$CUDA \
+        --dump_path /scratch/saad/$TASK/data-comparison/$SIZE/swav-b1/t$RUN \
+        --encoder swav-b1 \
+        --normalization data \
+        --fine_tune_encoder True \
+        --batch_size 16 \
+        --data_size $SIZE
+    done
 done
