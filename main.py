@@ -11,7 +11,7 @@ from models import encoders, decoders
 
 # Create parser
 parser = argparse.ArgumentParser(
-    description="""This script loads an encoder, a decoder, and a 
+    description="""This script loads an encoder, a decoder, and a
     task, then trains using the specified set up on that task."""
 )
 
@@ -19,12 +19,9 @@ parser = argparse.ArgumentParser(
 # Data args
 ###################
 parser.add_argument(
-    "--task",
-    type=str,
-    default=None,
-    choices=["solar", "crop_delineation"],
+    "--task", type=str, default=None, choices=['solar', 'building', 'crop_delineation'],
     required=True,
-    help="""The training task to attempt. Valid tasks 
+    help="""The training task to attempt. Valid tasks
     include 'solar' [todo -- add the list of tasks as they are developed].""",
 )
 parser.add_argument(
@@ -58,11 +55,11 @@ parser.add_argument(
     "--encoder",
     type=str,
     default="swav",
-    choices=["swav", "none", "imagenet", "swav-s1", "swav-s2", "swav-s3", "swav-s4", "swav-c1"],
+    choices=["swav", "none", "imagenet", "swav-s1", "swav-s2", "swav-s3", "swav-s4", "swav-c1", 'swav-b1'],
     help="""The encoder to use. Valid
     options include 'swav', 'none', or 'imagenet'. If you specify, 'swav', then the encoder will
-    load the pretrained model using the SwAV self-supervised method on ImageNet. 'none' loads 
-    a ResNet-50 with no pretrained weights (i.e., random weights). 'imagenet' loads the 
+    load the pretrained model using the SwAV self-supervised method on ImageNet. 'none' loads
+    a ResNet-50 with no pretrained weights (i.e., random weights). 'imagenet' loads the
     supervised pretrained model on ImageNet.""",
 )
 
@@ -106,7 +103,7 @@ parser.add_argument(
     type=str,
     default="auto",
     help="""Whether to use the GPU. Default 'auto' which uses
-    a GPU if they are available. It is recommended that you explicitly set the GPU using a value of 
+    a GPU if they are available. It is recommended that you explicitly set the GPU using a value of
     'cuda:0' or 'cuda:1' so that you can more easily track the model.""",
 )
 parser.add_argument(
@@ -114,7 +111,7 @@ parser.add_argument(
     type=str,
     default="softiou",
     choices=["softiou", "xent"],
-    help="""Select the criterion to use. By default, the 
+    help="""Select the criterion to use. By default, the
     criterion is 'softiou' (stylized: SoftIoU), and this should be the default value for semantic
     segmentation tasks, although 'xent' maps to Binary Cross Entropy Loss.""",
 )
@@ -125,7 +122,7 @@ parser.add_argument(
     "--augment",
     type=bool,
     default=False,
-    help="""Whether to apply advanced 
+    help="""Whether to apply advanced
     augmentations. By default, this is False. However, this should almost always be turned to
     True for future experiments to prevent overfitting and to increase accuracy.""",
 )
@@ -170,12 +167,14 @@ def main():
 
     # Load the train dataset and the test dataset
     logging.info("Loading dataset...")
-    train_data, test_data = datasets.load(args.task, args.normalization, args.augment, size=args.data_size)
-
+    train_data, test_data = datasets.load(
+        args.task, args.normalization, args.augment, args.data_size)
     # Create the dataloader
     logging.info("Creating data loaders...")
-    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
-    test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=False)
+    train_loader = DataLoader(
+        train_data, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(
+        test_data, batch_size=args.batch_size, shuffle=False)
 
     # Instantiate the model
     logging.info("Instantiating the model...")
@@ -199,7 +198,8 @@ def main():
         params = decoder.parameters()
 
     logging.info("Setting up optimizer and criterion...")
-    optimizer = torch.optim.Adam(params, lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(
+        params, lr=args.lr, weight_decay=args.weight_decay)
     criterion = metrics.load(args.criterion, DEVICE)
 
     epoch_timer = utils.Timer()
@@ -214,7 +214,8 @@ def main():
 
         loss = test(test_loader, encoder, decoder, criterion)
         monitor.log(epoch, "val", loss)
-        logging.info(f"Epoch {epoch} took {epoch_timer.minutes_elapsed()} minutes.")
+        logging.info(
+            f"Epoch {epoch} took {epoch_timer.minutes_elapsed()} minutes.")
         epoch_timer.reset()
 
         if loss < best_test_loss:

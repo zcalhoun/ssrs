@@ -5,7 +5,7 @@ import pandas as pd
 import joblib
 
 from torchvision import transforms
-
+from natsort import natsorted
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
@@ -14,14 +14,14 @@ from .tasks.building import BuildingSegmentationDataset
 from .tasks.cropdelineation import CropDelineationDataset
 
 
-def load(task, normalization="data", augmentations=False, evaluate=False, old=False, size="small"):
+def load(task, normalization="data", augmentations=False, data_size=1024, evaluate=False, old=False, size="small"):
     logging.debug(f"In datasets, the task {task} is being loaded.")
     if task == "solar":
         print("Loading solar dataset.")
         return _load_solar_data(normalization, augmentations, evaluate, old, size)
     elif task == "building":
         print("Loading building dataset.")
-        return _load_building_data(normalization, augmentations)
+        return _load_building_data(normalization, augmentations, data_size)
     elif task == "crop_delineation":
         print("Loading crop delineation dataset.")
         return _load_cropdel_data(normalization, augmentations, evaluate, size)
@@ -222,16 +222,20 @@ def _load_solar_data(normalization, augmentations, evaluate, old=False, size="no
     return train_dataset, test_dataset
 
 
-def _load_building_data(normalization, augmentations):
-    print("Loading building dataset")
+def _load_building_data(normalization, augmentations, data_size):
     # Paths to train and test set (as split from INRIA)
-    train_imgs_path = "/home/sl636/inria/AerialImageDataset/train/train_images/"
-    train_masks_path = "/home/sl636/inria/AerialImageDataset/train/train_masks/"
-    val_imgs_path = "/home/sl636/inria/AerialImageDataset/train/val_images/"
-    val_masks_path = "/home/sl636/inria/AerialImageDataset/train/val_masks/"
+    # train_imgs_path = "/scratch/saad/1000_images/"
+    # train_masks_path = "/scratch/saad/1000_masks/"
+    # val_imgs_path = "/scratch/saad/1000_val_images/"
+    # val_masks_path = "/scratch/saad/1000_val_masks/"
 
-    train_imgs = os.listdir(train_imgs_path)
-    val_imgs = os.listdir(val_imgs_path)
+    train_imgs_path = f"/scratch/saad/{data_size}_images/"
+    train_masks_path = f"/scratch/saad/{data_size}_masks/"
+    val_imgs_path = f"/scratch/saad/{data_size}_val_images/"
+    val_masks_path = f"/scratch/saad/{data_size}_val_masks/"
+
+    train_imgs = natsorted(os.listdir(train_imgs_path))
+    val_imgs = natsorted(os.listdir(val_imgs_path))
 
     logging.debug(
         f"We are using {len(train_imgs)} training images and {len(val_imgs)} validation images from the INRIA building dataset.")
@@ -249,8 +253,8 @@ def _load_building_data(normalization, augmentations):
         # standard deviation.
         print("Normalizing using the data.")
         normalize = {
-            'mean': [0.501, 0.531, 0.491],
-            'std': [0.223, 0.211, 0.202]
+            'mean': [0.406, 0.428, 0.394],
+            'std': [0.201, 0.183, 0.176]
         }
     elif normalization == 'imagenet':
         print("Normalize using imagenet.")
@@ -303,7 +307,7 @@ def _load_building_data(normalization, augmentations):
     else:
         train_dataset = BuildingSegmentationDataset(
             train_imgs_path, train_imgs, train_masks_path,
-            transform=train_transform, augmentations=aug
+            transform=train_transform
         )
     # Load the test dataset
     logging.debug("Creating the test dataset.")

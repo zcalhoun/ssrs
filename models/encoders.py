@@ -16,6 +16,9 @@ def load(encoder_name):
     elif encoder_name == "imagenet":
         print("Loading supervised ResNet model.")
         return _load_imagenet()
+    elif encoder_name == "swav-b1":
+        print("Loading swav-b1.")
+        return _load_swav_b1()
     elif encoder_name == "swav-s3":
         print("Loading swav-solar-3 pretrained weights.")
         return _load_swav_pretrained('./models/swav/swav-s3.pt')
@@ -73,11 +76,35 @@ def _load_swav():
     """
     This model loads the weights from the SwAV model and places them
     onto this version of the ResNet model which allows the layers
-    to be passed forward 
-
+    to be passed forward
     """
     model = torch.hub.load("facebookresearch/swav:main", "resnet50")
     return _append_state_dict_to_resnet(model.state_dict())
+
+
+def _load_swav_b1():
+    """
+    This model loads the weights from the SwAV model that's trained
+    on the target data using its mean and standard deviation for the 
+    normalization scheme and places them onto this version of the 
+    ResNet model which allows the layers to be passed forward 
+
+    """
+    model = torch.load("/scratch/swav-models/swav-b1.pt")
+    return _append_state_dict_to_resnet_2(model)
+
+
+def _append_state_dict_to_resnet_2(state_dict):
+    # Instantiate the version of ResNet that we want
+    # and load the weights on top of this model.
+    # For semantic segmentation, we need inter_features
+    # to be true.
+    #
+    # As we add more functionality, this piece of code
+    # will need to change.
+    base_model = resnet.resnet50(inter_features=True)
+    base_model.load_state_dict(state_dict)
+    return base_model
 
 
 def _append_state_dict_to_resnet(state_dict):
