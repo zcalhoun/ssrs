@@ -1,6 +1,21 @@
 """BatchAnalysis.py
 This script handles getting the key statistics for multiple models and turning
-them into a Pandas array for easy analysis."""
+them into a Pandas array for easy analysis.
+
+Results are saved as a CSV file with the output name you specify (so make sure
+that you change this name).
+
+
+TO USE:
+* Edit the task/result path as appropriate.
+* Edit the encoders to get results from.
+* Ensure normalization is properly set up.
+* Edit the file name to save the results into.
+
+When in doubt, look for the #TODO flags
+
+
+"""
 
 import os
 import pandas as pd
@@ -16,10 +31,13 @@ from models import encoders, decoders
 
 
 def main():
-    base_path = "./experiments/crop_delineation/data-comparison/"
+    #TODO - edit the task and base path
+    task = 'solar'
+    base_path = "./experiments/solar/data-comparison/"
 
     data = ['64', '128', '256', '512', '1024']
-    encoders = ['supervised', 'swav-imagenet', 'swav-c1']
+    #TODO - edit the encoders
+    encoders = ['swav-b3']
     trials = ['t1', 't2', 't3']
 
     results = {
@@ -36,7 +54,7 @@ def main():
             print(f"On dataset {ds}...")
             for enc in encoders:
                 print(f"On encoder {enc}...")
-                test_dataset = get_dataloader(enc)
+                test_dataset = get_dataloader(enc, task)
                 for trial in trials:
                     print(f"On trial {trial}...")
                     model = Model(base_path, ds, enc, trial)
@@ -55,7 +73,8 @@ def main():
     # Save the dataframe
     df = pd.DataFrame(results)
 
-    df.to_csv('crop_delineation_batch_results.csv')
+    #TODO - change the destination folder here.
+    df.to_csv('solar_results_swav-b3.csv')
 
 
 def get_stats(model, dataloader):
@@ -158,15 +177,57 @@ class JaccardIndex():
         return self.numerator / self.denominator
 
 
-def get_dataloader(encoder):
-    if encoder == 'swav-c1':
-        norm = 'data'
-    else:
-        norm = 'imagenet'
+def get_dataloader(encoder, task):
+    """
+    This function loads the validation dataset according
+    to the task.
 
-    _, test_dataset = datasets.load(task="crop_delineation", normalization=norm, old=False, size="64")
+    #TODO - you might need to ensure that the 'elif' statement
+    that catches the specific encoder you are testing is updated
+    so that the normalization scheme is updated.
 
-    return test_dataset
+    """
+
+    if task == 'building':
+
+        if encoder in ['swav-b1', 'swav-b2', 'swav-b3']:
+            print("Norm is data")
+            norm = 'data'
+        elif encoder == 'swav-a1':
+            norm = 'all'
+        elif encoder == 'swav-s7':
+            norm = 'solar'
+        else:
+            norm = 'imagenet'
+
+        _, test_dataset = datasets.load(task=task, normalization=norm, old=False, data_size="1024")
+
+        return test_dataset
+
+    elif task == "crop_delineation":
+        if encoder == 'swav-a1':
+            norm = 'all'
+        else:
+            norm = 'imagenet'
+
+        _, test_dataset = datasets.load(task=task, normalization=norm)
+
+        return test_dataset
+    
+    elif task == "solar":
+        if encoder == 'swav-a1':
+            norm = 'all'
+        elif encoder == 'swav-s7':
+            norm = 'data'
+        elif encoder == 'swav-b3':
+            norm = 'building'
+        else:
+            norm = 'imagenet'
+
+        _, test_dataset = datasets.load(task=task, normalization=norm, data_size="1024")
+
+        return test_dataset
+
 
 
 if __name__ == "__main__":

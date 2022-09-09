@@ -16,15 +16,15 @@ def load(encoder_name):
     elif encoder_name == "imagenet":
         print("Loading supervised ResNet model.")
         return _load_imagenet()
-    elif encoder_name == "swav-b1":
-        print("Loading swav-b1.")
-        return _load_swav_b1()
+    elif encoder_name == "swav-b3":
+        print("Loading swav-b3.")
+        return _load_swav_pretrained('./models/swav/swav-b3.pt')
     elif encoder_name == "swav-s3":
         print("Loading swav-solar-3 pretrained weights.")
         return _load_swav_pretrained('./models/swav/swav-s3.pt')
-    elif encoder_name == "swav-s4":
-        print("Loading swav-solar-4 pretrained weights.")
-        return _load_swav_pretrained('./models/swav/swav-s4.pt')
+    elif encoder_name == "swav-s7":
+        print("Loading swav-solar-7 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-s7.pt')
     elif encoder_name == "swav-s2":
         print("Loading swav-solar-2 pretrained weights.")
         return _load_swav_pretrained('./models/swav/swav-s2.pt')
@@ -37,6 +37,9 @@ def load(encoder_name):
     elif encoder_name == "swav-c2":
         print("Loading swav-crop-2 pretrained weights.")
         return _load_swav_pretrained('./models/swav/swav-c2.pt')
+    elif encoder_name == "swav-a1":
+        print("Loading swav-all-1 pretrained weights.")
+        return _load_swav_pretrained('./models/swav/swav-a1.pt')
     else:
         logging.error(f"Encoder {encoder_name} not implemented.")
         raise NotImplementedError
@@ -82,7 +85,7 @@ def _load_swav():
     return _append_state_dict_to_resnet(model.state_dict())
 
 
-def _load_swav_b1():
+def _load_swav_b2():
     """
     This model loads the weights from the SwAV model that's trained
     on the target data using its mean and standard deviation for the 
@@ -90,7 +93,7 @@ def _load_swav_b1():
     ResNet model which allows the layers to be passed forward 
 
     """
-    model = torch.load("/scratch/swav-models/swav-b1.pt")
+    model = torch.load("./swav-models/swav-b1.pt")
     return _append_state_dict_to_resnet_2(model)
 
 
