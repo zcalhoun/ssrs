@@ -18,13 +18,13 @@ def load(task, normalization="data", augmentations=False, data_size=1024, evalua
     logging.debug(f"In datasets, the task {task} is being loaded.")
     if task == "solar":
         print("Loading solar dataset.")
-        return _load_solar_data(normalization, augmentations, evaluate, old, size)
+        return _load_solar_data(normalization, augmentations, evaluate, old, data_size)
     elif task == "building":
         print("Loading building dataset.")
         return _load_building_data(normalization, augmentations, data_size)
     elif task == "crop_delineation":
         print("Loading crop delineation dataset.")
-        return _load_cropdel_data(normalization, augmentations, evaluate, size)
+        return _load_cropdel_data(normalization, augmentations, evaluate, data_size)
 
 def _load_cropdel_data(normalization, augmentations, evaluate, size=None):
     print(f"Data evaluate: {evaluate}")
@@ -49,7 +49,13 @@ def _load_cropdel_data(normalization, augmentations, evaluate, size=None):
     if normalization == "data":
         # TODO -- calculate this
         normalize = {"mean": [0.238, 0.297, 0.317], "std": [0.187, 0.123, 0.114]}
-    else:
+    elif normalization == 'all':
+        print("Normalize using all remote sensing data.")
+        normalize = {
+            'mean': [0.431, 0.449, 0.411],
+            'std': [0.120, 0.175, 0.164]
+        }
+    elif normalization == 'imagenet':
         normalize = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
     
     # Add augmentations
@@ -104,27 +110,27 @@ def _load_cropdel_data(normalization, augmentations, evaluate, size=None):
         return train_dataset, val_dataset
 
 
-def _load_solar_data(normalization, augmentations, evaluate, old=False, size="normal"):
+def _load_solar_data(normalization, augmentations, evaluate, old=False, data_size="normal"):
     # Split the data into a train and test set
     data_path = "/scratch/zach/solar-pv/"
     mask_path = "/scratch/zach/mask_tensors/"
 
-    if size != 'normal':
+    if data_size != 'normal':
         val_files = joblib.load("/scratch/zach/train_test_split_1024.joblib")
-
-        if size == "64":
+        print(f"Size: {data_size}")
+        if data_size == "64":
             print("Loading dataset with 64 training examples")
             files = joblib.load("/scratch/zach/train_test_split_64.joblib")
-        elif size == "128":
+        elif data_size == "128":
             print("Loading dataset with 128 training examples")
             files = joblib.load("/scratch/zach/train_test_split_128.joblib")
-        elif size == "256":
+        elif data_size == "256":
             print("Loading dataset with 256 training examples")
             files = joblib.load("/scratch/zach/train_test_split_256.joblib")
-        elif size == "512":
+        elif data_size == "512":
             print("Loading dataset with 512 training examples")
             files = joblib.load("/scratch/zach/train_test_split_512.joblib")
-        elif size == "1024":
+        elif data_size == "1024":
             print("Loading dataset with 1024 training examples")
             files = joblib.load("/scratch/zach/train_test_split_1024.joblib")
 
@@ -167,6 +173,18 @@ def _load_solar_data(normalization, augmentations, evaluate, old=False, size="no
         print("Normalize using imagenet.")
         # This normalization scheme uses the means and weights for ImageNet.
         normalize = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
+    elif normalization == 'all':
+        print("Normalize using all remote sensing data.")
+        normalize = {
+            'mean': [0.431, 0.449, 0.411],
+            'std': [0.120, 0.175, 0.164]
+        }
+    elif normalization == "building":
+        print("Normalize using the building statistics.")
+        normalize = {
+            'mean': [0.406, 0.428, 0.394],
+            'std': [0.201, 0.183, 0.176]
+        }
     else:
         raise NotImplementedError("This normalization scheme isn't supported.")
 
@@ -263,6 +281,16 @@ def _load_building_data(normalization, augmentations, data_size):
             'mean': [0.485, 0.456, 0.406],
             'std': [0.229, 0.224, 0.225]
         }
+    elif normalization == 'all':
+        print("Normalize using all remote sensing data.")
+        normalize = {
+            'mean': [0.431, 0.449, 0.411],
+            'std': [0.120, 0.175, 0.164]
+        }
+    elif normalization == 'solar':
+        print("Normalize using the solar data statistics.")
+
+        normalize = {"mean": [0.507, 0.513, 0.461], "std": [0.172, 0.133, 0.114]}
     else:
         raise NotImplementedError("This normalization scheme isn't supported.")
 
