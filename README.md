@@ -1,7 +1,7 @@
 # ssrs
 Self-Supervised Remote Sensing Evaluation
 
-This repository includes the code we used to run the experiments described in the paper. The file ``swav_env.yml`` has the conda environment with all the dependecies required. We desribe below the step-by-step guide to run the following experiment: use pretrained ResNet model on ImageNet using SwAV, perform additional pretraining using the target dataset, test resulting model on test dataset and report pixel IoU.
+This repository includes the code we used to run the experiments described in the paper "Self-supervised encoders are better transfer learners in remote sensing applications" (publication pending -- link to be added soon). The file ``swav_env.yml`` has the conda environment with all the dependecies required. We desribe below the step-by-step guide to run the following experiment: use pretrained ResNet model on ImageNet using SwAV, perform additional pretraining using the target dataset, test resulting model on test dataset and report pixel IoU.
 
 1. Clone both the swav and ssrs repositories 
 2. Under the swav repo, run ``main_swav.py`` using the appropriate script. See ``/swav/scripts/building/swav_800ep_pretrain_3000.sh`` for an example. Update the parameters as needed (DATASET_PATH, nproc_pernode, task)
